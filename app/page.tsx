@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
-import CoupleGallery from "@/components/CoupleGallery";
 import Details from "@/components/Details";
 import RSVP from "@/components/RSVP";
 import PhotoRepository from "@/components/PhotoRepository";
@@ -19,15 +18,12 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen relative overflow-x-hidden">
-      {/* Navbar */}
+    <main className="min-h-screen relative overflow-x-hidden bg-[#FAF7F2]">
+      {/* Navbar with Logo & Actions */}
       <Navbar isPlayingAudio={isPlayingAudio} toggleAudio={toggleAudio} />
 
-      {/* Hero Section with Countdown & Real Photo */}
+      {/* Hero Section with Dynamic Couple Photo Crossfade Carousel & Countdown */}
       <Hero />
-
-      {/* Couple Love Story Gallery (Nuestra Historia) */}
-      <CoupleGallery />
 
       {/* Details & Location & Itinerary */}
       <Details />
@@ -35,7 +31,7 @@ export default function Home() {
       {/* RSVP Confirmation Form */}
       <RSVP />
 
-      {/* Guest Photo Repository & Gallery */}
+      {/* Guest Photo Repository */}
       <PhotoRepository />
 
       {/* Spotify Playlist Song Request Hub */}

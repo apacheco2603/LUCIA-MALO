@@ -26,10 +26,9 @@ export default function Navbar({ isPlayingAudio, toggleAudio }: NavbarProps) {
 
   const navLinks = [
     { name: "Inicio", href: "#hero" },
-    { name: "Nuestra Historia", href: "#historia" },
     { name: "Detalles & Mapa", href: "#detalles" },
     { name: "Confirmar RSVP", href: "#rsvp" },
-    { name: "Fotos", href: "#fotos" },
+    { name: "Fotos Invitados", href: "#fotos" },
     { name: "Playlist Spotify", href: "#spotify" },
   ];
 
@@ -50,23 +49,23 @@ export default function Navbar({ isPlayingAudio, toggleAudio }: NavbarProps) {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? "glass-panel py-3 shadow-sm border-b border-gold-500/20"
-          : "bg-gradient-to-b from-black/40 to-transparent py-5 text-white"
+          : "bg-gradient-to-b from-black/60 via-black/30 to-transparent py-4 text-white"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Monogram Logo */}
         <a
           href="#hero"
-          className="flex items-center gap-2 group cursor-pointer"
+          className="flex items-center gap-2.5 group cursor-pointer"
         >
-          <div className="w-10 h-10 rounded-full border border-gold-500/60 flex items-center justify-center bg-white/10 backdrop-blur-md group-hover:scale-105 transition-transform">
+          <div className="w-10 h-10 rounded-full border border-gold-500/60 flex items-center justify-center bg-white/10 backdrop-blur-md group-hover:scale-105 transition-transform shadow-md">
             <span className="font-serif text-lg font-bold gold-text-gradient">
               L&M
             </span>
           </div>
           <span
             className={`font-serif text-xl sm:text-2xl tracking-widest uppercase transition-colors ${
-              scrolled ? "text-sage-900" : "text-white"
+              scrolled ? "text-sage-900" : "text-white drop-shadow-md"
             }`}
           >
             Lucía & Malo
@@ -74,13 +73,13 @@ export default function Navbar({ isPlayingAudio, toggleAudio }: NavbarProps) {
         </a>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6">
+        <nav className="hidden md:flex items-center space-x-7">
           {navLinks.map((link) => (
             <a
               key={link.name}
               href={link.href}
               className={`text-xs font-semibold tracking-wider uppercase transition-all duration-200 hover:text-gold-500 relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[2px] after:bg-gold-500 hover:after:w-full after:transition-all ${
-                scrolled ? "text-gray-700" : "text-white/90 drop-shadow-sm"
+                scrolled ? "text-gray-700" : "text-white/95 drop-shadow-md"
               }`}
             >
               {link.name}
@@ -92,7 +91,7 @@ export default function Navbar({ isPlayingAudio, toggleAudio }: NavbarProps) {
         <div className="flex items-center gap-2.5">
           <button
             onClick={handleShareWhatsApp}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold tracking-wider transition-all shadow-sm"
+            className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold tracking-wider transition-all shadow-md hover:scale-105"
             title="Compartir invitación por WhatsApp"
           >
             <Share2 className="w-3.5 h-3.5" />
@@ -101,7 +100,7 @@ export default function Navbar({ isPlayingAudio, toggleAudio }: NavbarProps) {
 
           <button
             onClick={toggleAudio}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold tracking-wider transition-all duration-300 ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wider transition-all duration-300 ${
               isPlayingAudio
                 ? "bg-gold-500 text-white shadow-lg shadow-gold-500/30 animate-pulse"
                 : scrolled

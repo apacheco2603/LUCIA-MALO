@@ -11,6 +11,29 @@ export default function Footer() {
 
   return (
     <footer className="bg-sage-900 text-white pt-16 pb-12 px-4 border-t border-gold-500/30 relative">
+      {/* Closing Couple Photo Banner Card (Photo 1 - Desert Dunes) */}
+      <div className="max-w-4xl mx-auto mb-16 rounded-3xl overflow-hidden glass-panel-dark border border-gold-500/40 p-4 sm:p-6 text-center shadow-2xl flex flex-col sm:flex-row items-center gap-6">
+        <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden bg-black/50 border border-gold-500/40 flex-shrink-0 shadow-lg">
+          <img
+            src="/images/couple/photo_1.jpg"
+            alt="Lucía & Malo"
+            className="w-full h-full object-cover object-[center_20%]"
+          />
+        </div>
+        <div className="text-center sm:text-left space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/20 text-gold-300 text-xs font-semibold uppercase tracking-wider border border-gold-500/30">
+            <Heart className="w-3.5 h-3.5 fill-gold-400 text-gold-400" />
+            <span>¡Nos vemos en Madrid!</span>
+          </div>
+          <h4 className="font-serif text-2xl sm:text-3xl font-bold text-white">
+            "¡Gracias por formar parte de nuestra historia!"
+          </h4>
+          <p className="text-xs text-gold-200/80 font-light">
+            Lucía & Malo • 3 de Octubre de 2026
+          </p>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto text-center">
         {/* Monogram */}
         <div className="w-16 h-16 rounded-full border border-gold-500/60 flex items-center justify-center bg-white/5 mx-auto mb-6">

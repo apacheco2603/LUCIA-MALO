@@ -1,25 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Calendar, MapPin, Heart, ChevronDown, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { Calendar, MapPin, Heart, ChevronDown } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function Hero() {
-  const { lang, t } = useLanguage();
+  const { t } = useLanguage();
 
   // Target wedding date: October 3, 2026
   const weddingDate = new Date("2026-10-03T18:00:00").getTime();
-
-  // Dynamic photos array of the couple
-  const couplePhotos = [
-    { url: "/images/couple/photo_1.jpg", caption: lang === "fr" ? "Aventures dans le Désert" : "Aventuras en el Desierto" },
-    { url: "/images/couple/photo_2.jpg", caption: lang === "fr" ? "Promenades au Bord de la Mer" : "Paseos Junto al Mar" },
-    { url: "/images/couple/photo_3.jpg", caption: lang === "fr" ? "Rires & Complicité" : "Risas & Complicidad" },
-    { url: "/images/couple/photo_4.jpg", caption: lang === "fr" ? "Escapades en Voyage" : "Tardes de Viaje" },
-    { url: "/images/couple/photo_5.jpg", caption: lang === "fr" ? "Panoramas Inoubliables" : "Miradores Inolvidables" },
-  ];
-
-  const [currentPhotoIdx, setCurrentPhotoIdx] = useState(0);
 
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
@@ -27,14 +16,6 @@ export default function Hero() {
     minutes: 0,
     seconds: 0,
   });
-
-  // Auto-rotate background couple photos every 5 seconds
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentPhotoIdx((prev) => (prev + 1) % couplePhotos.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [couplePhotos.length]);
 
   // Countdown timer logic
   useEffect(() => {
@@ -63,44 +44,23 @@ export default function Hero() {
     return () => clearInterval(interval);
   }, [weddingDate]);
 
-  const handlePrevPhoto = () => {
-    setCurrentPhotoIdx((prev) =>
-      prev === 0 ? couplePhotos.length - 1 : prev - 1
-    );
-  };
-
-  const handleNextPhoto = () => {
-    setCurrentPhotoIdx((prev) => (prev + 1) % couplePhotos.length);
-  };
-
   return (
     <section
       id="hero"
       className="relative min-h-screen flex items-center justify-center pt-28 pb-16 px-4 overflow-hidden bg-sage-900 text-white"
     >
-      {/* Dynamic Background Image Crossfade */}
+      {/* Background Vignette & Ambient Glow */}
       <div className="absolute inset-0 z-0 overflow-hidden">
-        {couplePhotos.map((photo, idx) => (
-          <div
-            key={idx}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-              idx === currentPhotoIdx ? "opacity-40 scale-105" : "opacity-0 scale-100"
-            }`}
-            style={{ transition: "opacity 1.2s ease-in-out, transform 8s ease-out" }}
-          >
-            <img
-              src={photo.url}
-              alt="Lucía & Malo"
-              className="w-full h-full object-cover object-[center_25%] filter blur-[3px]"
-            />
-          </div>
-        ))}
-        <div className="absolute inset-0 bg-gradient-to-t from-sage-900 via-sage-900/70 to-sage-900/60" />
-        <div className="absolute inset-0 bg-black/30" />
+        <img
+          src="/images/couple/photo_5.jpg"
+          alt="Lucía & Malo"
+          className="w-full h-full object-cover object-[center_25%] filter blur-[6px] opacity-30"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-sage-900 via-sage-900/80 to-sage-900/60" />
       </div>
 
       {/* Hero Central Content */}
-      <div className="relative z-10 max-w-5xl mx-auto text-center flex flex-col items-center">
+      <div className="relative z-10 max-w-4xl mx-auto text-center flex flex-col items-center">
         
         {/* Top Badge */}
         <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-gold-500/40 mb-6 animate-bounce">
@@ -120,60 +80,16 @@ export default function Hero() {
           {t("hero_quote")}
         </p>
 
-        {/* Featured Photo Frame Card */}
-        <div className="relative w-full max-w-md mx-auto mb-10 group">
-          <div className="glass-panel-dark rounded-3xl p-3 sm:p-4 border border-gold-500/40 shadow-2xl overflow-hidden relative">
-            
-            <div className="relative aspect-[4/5] sm:aspect-[3/4] rounded-2xl overflow-hidden bg-black/50">
+        {/* Featured Photo Card of Lucía & Malo - Faces 100% visible with object-[center_20%] */}
+        <div className="w-full max-w-sm sm:max-w-md mx-auto mb-10">
+          <div className="glass-panel-dark rounded-3xl p-3 sm:p-4 border border-gold-500/40 shadow-2xl overflow-hidden">
+            <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-black/50 border border-white/10">
               <img
-                src={couplePhotos[currentPhotoIdx].url}
-                alt={couplePhotos[currentPhotoIdx].caption}
-                className="w-full h-full object-cover object-[center_20%] transition-transform duration-700 hover:scale-105"
+                src="/images/couple/photo_5.jpg"
+                alt="Lucía & Malo"
+                className="w-full h-full object-cover object-[center_20%]"
               />
-
-              {/* Caption */}
-              <div className="absolute bottom-3 left-3 right-3 bg-black/60 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/15 flex items-center justify-between text-xs text-white">
-                <span className="font-medium tracking-wide flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-gold-400" />
-                  {couplePhotos[currentPhotoIdx].caption}
-                </span>
-                <span className="text-[10px] text-gold-300 font-mono">
-                  {currentPhotoIdx + 1} / {couplePhotos.length}
-                </span>
-              </div>
             </div>
-
-            {/* Slider Controls */}
-            <button
-              onClick={handlePrevPhoto}
-              className="absolute left-5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 hover:bg-gold-500 text-white backdrop-blur-md flex items-center justify-center transition-colors border border-white/20"
-              aria-label="Anterior"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-
-            <button
-              onClick={handleNextPhoto}
-              className="absolute right-5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 hover:bg-gold-500 text-white backdrop-blur-md flex items-center justify-center transition-colors border border-white/20"
-              aria-label="Siguiente"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Dots Indicator */}
-          <div className="flex justify-center items-center gap-2 mt-3">
-            {couplePhotos.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentPhotoIdx(idx)}
-                className={`h-2 rounded-full transition-all ${
-                  idx === currentPhotoIdx
-                    ? "w-6 bg-gold-400"
-                    : "w-2 bg-white/30 hover:bg-white/60"
-                }`}
-              />
-            ))}
           </div>
         </div>
 

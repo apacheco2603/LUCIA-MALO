@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, ChangeEvent, FormEvent } from "react";
-import { Camera, Upload, Heart, Download, Maximize2, X } from "lucide-react";
+import { Camera, Upload, Heart, Download, Maximize2, X, Image as ImageIcon } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 interface PhotoItem {
@@ -18,59 +18,6 @@ interface PhotoItem {
 
 export default function PhotoRepository() {
   const { t } = useLanguage();
-
-  const defaultPhotos: PhotoItem[] = [
-    {
-      id: "p1",
-      url: "/images/couple/photo_1.jpg",
-      title: "Desierto",
-      author: "Lucía & Malo",
-      category: "coctel",
-      likes: 42,
-      commentsCount: 5,
-      uploadedAt: "2026",
-    },
-    {
-      id: "p2",
-      url: "/images/couple/photo_2.jpg",
-      title: "Playa",
-      author: "Lucía & Malo",
-      category: "fiesta",
-      likes: 38,
-      commentsCount: 8,
-      uploadedAt: "2026",
-    },
-    {
-      id: "p3",
-      url: "/images/couple/photo_3.jpg",
-      title: "Risas",
-      author: "Lucía & Malo",
-      category: "invitados",
-      likes: 56,
-      commentsCount: 12,
-      uploadedAt: "2026",
-    },
-    {
-      id: "p4",
-      url: "/images/couple/photo_4.jpg",
-      title: "Viaje",
-      author: "Lucía & Malo",
-      category: "coctel",
-      likes: 31,
-      commentsCount: 4,
-      uploadedAt: "2026",
-    },
-    {
-      id: "p5",
-      url: "/images/couple/photo_5.jpg",
-      title: "Mirador",
-      author: "Lucía & Malo",
-      category: "ceremonia",
-      likes: 49,
-      commentsCount: 9,
-      uploadedAt: "2026",
-    },
-  ];
 
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [activeFilter, setActiveFilter] = useState<string>("todas");
@@ -89,12 +36,12 @@ export default function PhotoRepository() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        setPhotos(parsed.length > 0 ? parsed : defaultPhotos);
+        setPhotos(parsed);
       } catch (e) {
-        setPhotos(defaultPhotos);
+        setPhotos([]);
       }
     } else {
-      setPhotos(defaultPhotos);
+      setPhotos([]);
     }
   }, []);
 
@@ -121,12 +68,12 @@ export default function PhotoRepository() {
     const newPhoto: PhotoItem = {
       id: "p_" + Date.now(),
       url: imagePreview,
-      title: newTitle.trim() || "Boda Lucía & Malo",
+      title: newTitle.trim() || "Recuerdo de la Boda",
       author: newAuthor.trim() || "Invitado",
       category: newCategory,
       likes: 1,
       commentsCount: 0,
-      uploadedAt: "Recent",
+      uploadedAt: "Hoy",
       isUserUploaded: true,
     };
 
@@ -217,61 +164,82 @@ export default function PhotoRepository() {
         ))}
       </div>
 
-      {/* Photos Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredPhotos.map((photo) => (
-          <div
-            key={photo.id}
-            onClick={() => {
-              setSelectedPhoto(photo);
-              setModalOpen(true);
-            }}
-            className="glass-card rounded-2xl overflow-hidden group cursor-pointer border border-gold-500/20 flex flex-col justify-between hover:shadow-xl transition-all"
-          >
-            <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
-              <img
-                src={photo.url}
-                alt={photo.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4 justify-between">
-                <span className="text-white text-xs font-medium tracking-wide">
-                  {photo.title}
-                </span>
-                <Maximize2 className="w-5 h-5 text-white/80" />
-              </div>
-              <span className="absolute top-3 left-3 bg-black/40 backdrop-blur-md text-white text-[10px] uppercase tracking-wider font-semibold px-2.5 py-1 rounded-full border border-white/20">
-                {photo.category}
-              </span>
-            </div>
-
-            <div className="p-4 flex items-center justify-between text-xs text-gray-600">
-              <div>
-                <p className="font-semibold text-sage-900">{photo.title}</p>
-                <p className="text-[11px] text-gray-400">par {photo.author}</p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={(e) => handleToggleLike(photo.id, e)}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
-                    likedPhotos[photo.id]
-                      ? "bg-rose-100 text-rose-600"
-                      : "bg-gray-100 text-gray-600 hover:bg-rose-50 hover:text-rose-500"
-                  }`}
-                >
-                  <Heart
-                    className={`w-3.5 h-3.5 ${
-                      likedPhotos[photo.id] ? "fill-rose-600 text-rose-600" : ""
-                    }`}
-                  />
-                  <span>{photo.likes}</span>
-                </button>
-              </div>
-            </div>
+      {/* Empty State or Photos Grid */}
+      {filteredPhotos.length === 0 ? (
+        <div className="glass-card rounded-3xl p-12 text-center border border-dashed border-gold-500/40 max-w-xl mx-auto flex flex-col items-center">
+          <div className="w-16 h-16 rounded-full bg-gold-100 text-gold-700 flex items-center justify-center mb-4">
+            <ImageIcon className="w-8 h-8" />
           </div>
-        ))}
-      </div>
+          <h3 className="font-serif text-2xl font-bold text-sage-900 mb-2">
+            ¡Sé el primero en compartir una foto!
+          </h3>
+          <p className="text-xs text-gray-500 mb-6 max-w-sm">
+            Este espacio es exclusivo para que todos los invitados compartan las fotos tomadas durante la boda.
+          </p>
+          <button
+            onClick={() => setUploadModalOpen(true)}
+            className="px-6 py-3 rounded-full bg-sage-900 hover:bg-sage-800 text-white font-semibold text-xs tracking-wider uppercase transition-all shadow-md flex items-center gap-2"
+          >
+            <Camera className="w-4 h-4 text-gold-400" />
+            <span>Subir Mi Primera Foto</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredPhotos.map((photo) => (
+            <div
+              key={photo.id}
+              onClick={() => {
+                setSelectedPhoto(photo);
+                setModalOpen(true);
+              }}
+              className="glass-card rounded-2xl overflow-hidden group cursor-pointer border border-gold-500/20 flex flex-col justify-between hover:shadow-xl transition-all"
+            >
+              <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+                <img
+                  src={photo.url}
+                  alt={photo.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4 justify-between">
+                  <span className="text-white text-xs font-medium tracking-wide">
+                    {photo.title}
+                  </span>
+                  <Maximize2 className="w-5 h-5 text-white/80" />
+                </div>
+                <span className="absolute top-3 left-3 bg-black/40 backdrop-blur-md text-white text-[10px] uppercase tracking-wider font-semibold px-2.5 py-1 rounded-full border border-white/20">
+                  {photo.category}
+                </span>
+              </div>
+
+              <div className="p-4 flex items-center justify-between text-xs text-gray-600">
+                <div>
+                  <p className="font-semibold text-sage-900">{photo.title}</p>
+                  <p className="text-[11px] text-gray-400">por {photo.author}</p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={(e) => handleToggleLike(photo.id, e)}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                      likedPhotos[photo.id]
+                        ? "bg-rose-100 text-rose-600"
+                        : "bg-gray-100 text-gray-600 hover:bg-rose-50 hover:text-rose-500"
+                    }`}
+                  >
+                    <Heart
+                      className={`w-3.5 h-3.5 ${
+                        likedPhotos[photo.id] ? "fill-rose-600 text-rose-600" : ""
+                      }`}
+                    />
+                    <span>{photo.likes}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Upload Modal */}
       {uploadModalOpen && (
@@ -309,7 +277,7 @@ export default function PhotoRepository() {
                   <div className="flex flex-col items-center py-4">
                     <Upload className="w-10 h-10 text-gold-400 mb-2" />
                     <span className="text-sm font-medium text-white">
-                      Click / Drop Photo
+                      Haz clic o arrastra tu foto aquí
                     </span>
                   </div>
                 )}
@@ -318,7 +286,7 @@ export default function PhotoRepository() {
               <div>
                 <input
                   type="text"
-                  placeholder="Title / Description..."
+                  placeholder="Título o Descripción..."
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-gold-500"
@@ -329,7 +297,7 @@ export default function PhotoRepository() {
                 <input
                   type="text"
                   required
-                  placeholder="Your Name..."
+                  placeholder="Tu Nombre..."
                   value={newAuthor}
                   onChange={(e) => setNewAuthor(e.target.value)}
                   className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-gold-500"
@@ -341,10 +309,10 @@ export default function PhotoRepository() {
                   }
                   className="w-full bg-sage-900 border border-white/20 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-gold-500"
                 >
-                  <option value="fiesta">Fiesta / Fête</option>
-                  <option value="ceremonia">Ceremonia / Cérémonie</option>
-                  <option value="coctel">Cóctel / Cocktail</option>
-                  <option value="invitados">Invitados / Invités</option>
+                  <option value="fiesta">Fiesta</option>
+                  <option value="ceremonia">Ceremonia</option>
+                  <option value="coctel">Cóctel</option>
+                  <option value="invitados">Invitados</option>
                 </select>
               </div>
 
@@ -385,7 +353,7 @@ export default function PhotoRepository() {
                   {selectedPhoto.title}
                 </h4>
                 <p className="text-xs text-white/70">
-                  {selectedPhoto.author}
+                  Subida por {selectedPhoto.author}
                 </p>
               </div>
 

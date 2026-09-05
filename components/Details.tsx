@@ -14,6 +14,7 @@ import {
   Wine,
   Music,
   CalendarPlus,
+  Heart,
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -108,6 +109,29 @@ export default function Details() {
         <p className="text-gray-600 font-light">
           {t("details_desc")}
         </p>
+      </div>
+
+      {/* Featured Photo Card 2 of Lucía & Malo (Beach Walk) */}
+      <div className="mb-20 max-w-4xl mx-auto rounded-3xl overflow-hidden glass-card border border-gold-500/30 p-4 sm:p-6 shadow-xl flex flex-col md:flex-row items-center gap-8">
+        <div className="w-full md:w-1/2 aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 shadow-md">
+          <img
+            src="/images/couple/photo_2.jpg"
+            alt="Lucía & Malo"
+            className="w-full h-full object-cover object-[center_30%]"
+          />
+        </div>
+        <div className="w-full md:w-1/2 text-center md:text-left space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-100 text-gold-800 text-xs font-semibold uppercase tracking-wider">
+            <Heart className="w-3.5 h-3.5 fill-gold-600 text-gold-600" />
+            <span>Lucía & Malo</span>
+          </div>
+          <h3 className="font-serif text-3xl font-bold text-sage-900">
+            "Paseos Junto al Mar"
+          </h3>
+          <p className="text-gray-600 font-light text-sm leading-relaxed">
+            Cada viaje y cada paso que hemos dado juntos nos ha conducido a este momento inolvidable. ¡Estamos impacientes por celebrar con todos vosotros!
+          </p>
+        </div>
       </div>
 
       {/* Itinerary Timeline */}

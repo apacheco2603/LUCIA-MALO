@@ -159,6 +159,7 @@ export default function SpotifyRepository() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-5 space-y-8">
+          {/* Form */}
           <div className="glass-card rounded-3xl p-6 sm:p-8 border border-gold-500/30">
             <h3 className="font-serif text-2xl font-bold text-sage-900 mb-2 flex items-center gap-2">
               <Plus className="w-6 h-6 text-gold-500" />
@@ -173,7 +174,7 @@ export default function SpotifyRepository() {
                 <input
                   type="text"
                   required
-                  placeholder="Title..."
+                  placeholder="Título..."
                   value={songTitle}
                   onChange={(e) => setSongTitle(e.target.value)}
                   className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-sage-900 focus:outline-none focus:border-gold-500"
@@ -187,7 +188,7 @@ export default function SpotifyRepository() {
                 <input
                   type="text"
                   required
-                  placeholder="Artist..."
+                  placeholder="Artista..."
                   value={artistName}
                   onChange={(e) => setArtistName(e.target.value)}
                   className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-sage-900 focus:outline-none focus:border-gold-500"
@@ -201,7 +202,7 @@ export default function SpotifyRepository() {
                   </label>
                   <input
                     type="text"
-                    placeholder="Name..."
+                    placeholder="Tu Nombre..."
                     value={guestName}
                     onChange={(e) => setGuestName(e.target.value)}
                     className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-sage-900 focus:outline-none focus:border-gold-500"
@@ -232,6 +233,51 @@ export default function SpotifyRepository() {
                 <span>{t("spotify_add_btn")}</span>
               </button>
             </form>
+          </div>
+
+          {/* Spotify Direct Playlist Widget with Photo 4 (Fountain Selfie) */}
+          <div className="glass-panel-dark text-white rounded-3xl p-6 border border-emerald-500/30">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-black font-bold">
+                  <Music className="w-5 h-5 fill-black" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-sm">Playlist Oficial Boda</h4>
+                  <p className="text-[11px] text-emerald-300">Lucía & Malo 2026</p>
+                </div>
+              </div>
+
+              <a
+                href="https://open.spotify.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-colors"
+              >
+                <span>{t("spotify_open_app")}</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+
+            {/* Embedded Cover Card with Photo 4 */}
+            <div className="bg-black/60 rounded-2xl p-4 border border-white/10 flex items-center gap-4">
+              <img
+                src="/images/couple/photo_4.jpg"
+                alt="Lucía & Malo Spotify Cover"
+                className="w-20 h-20 rounded-xl object-cover object-[center_20%] shadow-md"
+              />
+              <div className="flex-1 overflow-hidden">
+                <p className="text-xs font-semibold text-white truncate">
+                  Boda Lucía & Malo (La Lista Definitiva)
+                </p>
+                <p className="text-[11px] text-gray-400 mt-0.5">
+                  {songs.length + 15} canciones • 2h 45m
+                </p>
+                <div className="w-full bg-white/20 h-1.5 rounded-full mt-2 overflow-hidden">
+                  <div className="bg-emerald-500 h-full w-2/3 rounded-full animate-pulse" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

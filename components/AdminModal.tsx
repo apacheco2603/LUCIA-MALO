@@ -235,7 +235,7 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
       keys: [
         { key: "gift_title", label: "Título Regalos" },
         { key: "gift_desc", label: "Mensaje de Luna de Miel", multiline: true },
-        { key: "gift_iban_label: ", label: "Etiqueta IBAN" },
+        { key: "gift_iban_label", label: "Etiqueta IBAN" },
       ],
     },
     {

@@ -34,7 +34,7 @@ export default function Navbar({ isPlayingAudio, toggleAudio }: NavbarProps) {
 
   const handleShareWhatsApp = () => {
     const shareText =
-      "¡Hola! Te invitamos a celebrar nuestra boda (Lucía & Malo) el 24 de Octubre de 2026. 💍\n\n" +
+      "¡Hola! Te invitamos a celebrar nuestra boda (Lucía & Malo) el 3 de Octubre de 2026. 💍\n\n" +
       "Entra en nuestra web para ver los detalles, confirmar tu asistencia y añadir tus canciones favoritas:\n" +
       "https://boda-lucia.app";
 

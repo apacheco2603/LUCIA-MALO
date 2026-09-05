@@ -20,7 +20,7 @@ export default function Footer() {
         </h3>
 
         <p className="text-xs uppercase tracking-widest text-gold-400 font-semibold mb-6">
-          24 de Octubre de 2026 • Madrid
+          3 de Octubre de 2026 • Madrid
         </p>
 
         {/* Wedding Hashtag */}

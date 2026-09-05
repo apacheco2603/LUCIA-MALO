@@ -30,7 +30,7 @@ export default function Details() {
     "https://calendar.google.com/calendar/render?action=TEMPLATE" +
     "&text=" +
     encodeURIComponent("Boda Lucía & Malo 💍") +
-    "&dates=20261024T173000Z/20261025T040000Z" +
+    "&dates=20261003T173000Z/20261004T040000Z" +
     "&details=" +
     encodeURIComponent("¡Acompáñanos a celebrar nuestra boda! Finca La Gaivota, Madrid.") +
     "&location=" +
@@ -45,8 +45,8 @@ export default function Details() {
       "SUMMARY:Boda Lucía & Malo 💍\n" +
       "DESCRIPTION:¡Acompáñanos a celebrar nuestra boda! Finca La Gaivota, Madrid.\n" +
       "LOCATION:Finca La Gaivota, Carretera de La Coruña Km 22, 28224 Madrid, España\n" +
-      "DTSTART:20261024T173000Z\n" +
-      "DTEND:20261025T040000Z\n" +
+      "DTSTART:20261003T173000Z\n" +
+      "DTEND:20261004T040000Z\n" +
       "END:VEVENT\n" +
       "END:VCALENDAR";
 
@@ -151,7 +151,7 @@ export default function Details() {
               Guarda el Evento en tu Calendario
             </h4>
             <p className="text-xs text-gray-500">
-              Sábado, 24 de Octubre de 2026 • 17:30 H
+              Sábado, 3 de Octubre de 2026 • 17:30 H
             </p>
           </div>
         </div>

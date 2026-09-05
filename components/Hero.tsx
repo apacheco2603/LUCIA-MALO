@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { Calendar, MapPin, Heart, ChevronDown, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 
 export default function Hero() {
-  // Target wedding date: October 24, 2026
-  const weddingDate = new Date("2026-10-24T18:00:00").getTime();
+  // Target wedding date: October 3, 2026
+  const weddingDate = new Date("2026-10-03T18:00:00").getTime();
 
   // Dynamic photos array of the couple (currently 5, ready for 12+)
   const couplePhotos = [
@@ -180,7 +180,7 @@ export default function Hero() {
         <div className="flex flex-wrap justify-center items-center gap-4 mb-8 text-xs sm:text-sm font-medium">
           <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/15">
             <Calendar className="w-4 h-4 text-gold-400" />
-            <span>Sábado, 24 de Octubre de 2026</span>
+            <span>Sábado, 3 de Octubre de 2026</span>
           </div>
           <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/15">
             <MapPin className="w-4 h-4 text-gold-400" />

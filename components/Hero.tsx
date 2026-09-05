@@ -47,23 +47,25 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex items-center justify-center pt-28 pb-16 px-4 overflow-hidden bg-sage-900 text-white"
+      className="relative min-h-screen flex items-center justify-center pt-28 pb-16 px-4 overflow-hidden text-white"
     >
-      {/* Background Vignette & Ambient Glow */}
+      {/* Full Hero Background Image of Lucía & Malo - Faces 100% visible with object-[center_20%] */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <img
           src="/images/couple/photo_5.jpg"
           alt="Lucía & Malo"
-          className="w-full h-full object-cover object-[center_25%] filter blur-[6px] opacity-30"
+          className="w-full h-full object-cover object-[center_20%] transition-all duration-700"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-sage-900 via-sage-900/80 to-sage-900/60" />
+        {/* Dark Elegant Gradient Overlays for High Legibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-sage-900 via-sage-900/60 to-black/60" />
+        <div className="absolute inset-0 bg-black/25" />
       </div>
 
       {/* Hero Central Content */}
       <div className="relative z-10 max-w-4xl mx-auto text-center flex flex-col items-center">
         
         {/* Top Badge */}
-        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-gold-500/40 mb-6 animate-bounce">
+        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-gold-500/50 mb-6 animate-bounce shadow-lg">
           <Heart className="w-4 h-4 text-gold-400 fill-gold-400" />
           <span className="font-serif text-sm tracking-widest uppercase text-gold-200">
             {t("hero_we_are_getting_married")}
@@ -72,41 +74,28 @@ export default function Hero() {
         </div>
 
         {/* Couple Names */}
-        <h1 className="font-serif text-5xl sm:text-7xl md:text-8xl tracking-tight leading-none mb-3 gold-text-gradient drop-shadow-2xl">
+        <h1 className="font-serif text-5xl sm:text-7xl md:text-8xl tracking-tight leading-none mb-4 gold-text-gradient drop-shadow-2xl">
           Lucía & Malo
         </h1>
 
-        <p className="text-sm sm:text-lg md:text-xl font-serif italic text-white/90 mb-8 max-w-2xl mx-auto font-light">
+        <p className="text-sm sm:text-lg md:text-xl font-serif italic text-white/95 mb-10 max-w-2xl mx-auto font-light drop-shadow-md">
           {t("hero_quote")}
         </p>
 
-        {/* Featured Photo Card of Lucía & Malo - Faces 100% visible with object-[center_20%] */}
-        <div className="w-full max-w-sm sm:max-w-md mx-auto mb-10">
-          <div className="glass-panel-dark rounded-3xl p-3 sm:p-4 border border-gold-500/40 shadow-2xl overflow-hidden">
-            <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-black/50 border border-white/10">
-              <img
-                src="/images/couple/photo_5.jpg"
-                alt="Lucía & Malo"
-                className="w-full h-full object-cover object-[center_20%]"
-              />
-            </div>
-          </div>
-        </div>
-
         {/* Event Meta Badges */}
-        <div className="flex flex-wrap justify-center items-center gap-4 mb-8 text-xs sm:text-sm font-medium">
-          <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/15">
+        <div className="flex flex-wrap justify-center items-center gap-4 mb-10 text-xs sm:text-sm font-medium">
+          <div className="flex items-center gap-2 bg-black/50 backdrop-blur-md px-4 py-2.5 rounded-full border border-white/20 shadow-md">
             <Calendar className="w-4 h-4 text-gold-400" />
             <span>{t("hero_date")}</span>
           </div>
-          <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/15">
+          <div className="flex items-center gap-2 bg-black/50 backdrop-blur-md px-4 py-2.5 rounded-full border border-white/20 shadow-md">
             <MapPin className="w-4 h-4 text-gold-400" />
             <span>{t("hero_location")}</span>
           </div>
         </div>
 
-        {/* Countdown */}
-        <div className="glass-panel-dark rounded-3xl p-6 sm:p-8 max-w-xl w-full mx-auto mb-8 border border-gold-500/40 shadow-2xl">
+        {/* Countdown Card */}
+        <div className="glass-panel-dark rounded-3xl p-6 sm:p-8 max-w-xl w-full mx-auto mb-10 border border-gold-500/40 shadow-2xl">
           <h2 className="text-[11px] uppercase tracking-widest text-gold-300 font-semibold mb-4">
             {t("hero_countdown_title")}
           </h2>
@@ -156,7 +145,7 @@ export default function Hero() {
           </a>
           <a
             href="#spotify"
-            className="w-full sm:w-auto px-8 py-4 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/30 backdrop-blur-md font-semibold text-xs tracking-wider uppercase transition-all"
+            className="w-full sm:w-auto px-8 py-4 rounded-full bg-white/15 hover:bg-white/25 text-white border border-white/30 backdrop-blur-md font-semibold text-xs tracking-wider uppercase transition-all shadow-md"
           >
             {t("hero_btn_spotify")}
           </a>
@@ -165,7 +154,7 @@ export default function Hero() {
 
       <a
         href="#detalles"
-        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white/60 hover:text-gold-400 transition-colors animate-bounce cursor-pointer z-10"
+        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white/70 hover:text-gold-400 transition-colors animate-bounce cursor-pointer z-10"
         aria-label="Detalles"
       >
         <ChevronDown className="w-7 h-7" />

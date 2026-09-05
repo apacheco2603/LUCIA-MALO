@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Music, Menu, X, Heart, Sparkles, Share2 } from "lucide-react";
+import { Music, Menu, X, Heart, Sparkles, Share2, Globe } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface NavbarProps {
   isPlayingAudio: boolean;
@@ -9,6 +10,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ isPlayingAudio, toggleAudio }: NavbarProps) {
+  const { lang, setLang, t } = useLanguage();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -25,23 +27,31 @@ export default function Navbar({ isPlayingAudio, toggleAudio }: NavbarProps) {
   }, []);
 
   const navLinks = [
-    { name: "Inicio", href: "#hero" },
-    { name: "Detalles & Mapa", href: "#detalles" },
-    { name: "Confirmar RSVP", href: "#rsvp" },
-    { name: "Fotos Invitados", href: "#fotos" },
-    { name: "Playlist Spotify", href: "#spotify" },
+    { name: t("nav_home"), href: "#hero" },
+    { name: t("nav_details"), href: "#detalles" },
+    { name: t("nav_rsvp"), href: "#rsvp" },
+    { name: t("nav_photos"), href: "#fotos" },
+    { name: t("nav_spotify"), href: "#spotify" },
   ];
 
   const handleShareWhatsApp = () => {
     const shareText =
-      "¡Hola! Te invitamos a celebrar nuestra boda (Lucía & Malo) el 3 de Octubre de 2026. 💍\n\n" +
-      "Entra en nuestra web para ver los detalles, confirmar tu asistencia y añadir tus canciones favoritas:\n" +
-      "https://boda-lucia.app";
+      lang === "fr"
+        ? "Bonjour ! Nous vous invitons à célébrer notre mariage (Lucía & Malo) le 3 Octobre 2026. 💍\n\n" +
+          "Rejoignez-nous sur notre site pour tous les détails, confirmer votre présence et suggérer vos chansons préférées :\n" +
+          "https://boda-lucia.app"
+        : "¡Hola! Te invitamos a celebrar nuestra boda (Lucía & Malo) el 3 de Octubre de 2026. 💍\n\n" +
+          "Entra en nuestra web para ver los detalles, confirmar tu asistencia y añadir tus canciones favoritas:\n" +
+          "https://boda-lucia.app";
 
     const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(
       shareText
     )}`;
     window.open(whatsappUrl, "_blank");
+  };
+
+  const toggleLanguage = () => {
+    setLang(lang === "es" ? "fr" : "es");
   };
 
   return (
@@ -87,15 +97,29 @@ export default function Navbar({ isPlayingAudio, toggleAudio }: NavbarProps) {
           ))}
         </nav>
 
-        {/* Right Actions: WhatsApp Share, Audio Button & Mobile Toggle */}
-        <div className="flex items-center gap-2.5">
+        {/* Right Actions: Language Switcher, WhatsApp Share, Audio & Mobile Toggle */}
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Language Switcher */}
+          <button
+            onClick={toggleLanguage}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold tracking-wider transition-all border ${
+              scrolled
+                ? "bg-sage-100 text-sage-900 border-sage-300 hover:bg-gold-100"
+                : "bg-white/20 text-white border-white/30 backdrop-blur-md hover:bg-white/30"
+            }`}
+            title="Cambiar idioma / Changer de langue"
+          >
+            <Globe className="w-3.5 h-3.5 text-gold-400" />
+            <span>{lang === "es" ? "🇫🇷 FR" : "🇪🇸 ES"}</span>
+          </button>
+
           <button
             onClick={handleShareWhatsApp}
             className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold tracking-wider transition-all shadow-md hover:scale-105"
-            title="Compartir invitación por WhatsApp"
+            title={t("nav_share")}
           >
             <Share2 className="w-3.5 h-3.5" />
-            <span>Compartir</span>
+            <span>{t("nav_share")}</span>
           </button>
 
           <button
@@ -107,11 +131,11 @@ export default function Navbar({ isPlayingAudio, toggleAudio }: NavbarProps) {
                 ? "bg-sage-100 text-sage-900 hover:bg-gold-100"
                 : "bg-white/20 text-white backdrop-blur-md hover:bg-white/30"
             }`}
-            title={isPlayingAudio ? "Pausar música de ambiente" : "Reproducir música de ambiente"}
+            title={t("nav_music_bg")}
           >
             <Music className={`w-3.5 h-3.5 ${isPlayingAudio ? "animate-spin" : ""}`} />
             <span className="hidden sm:inline">
-              {isPlayingAudio ? "Música Activa" : "Música Boda"}
+              {isPlayingAudio ? t("nav_music_active") : t("nav_music_bg")}
             </span>
           </button>
 
@@ -144,6 +168,18 @@ export default function Navbar({ isPlayingAudio, toggleAudio }: NavbarProps) {
               </a>
             ))}
 
+            <div className="flex items-center justify-between pt-2 border-t border-white/10">
+              <span className="text-xs uppercase text-gold-300 font-semibold">
+                Langue / Idioma
+              </span>
+              <button
+                onClick={toggleLanguage}
+                className="px-4 py-1.5 rounded-full bg-gold-500 text-white font-bold text-xs"
+              >
+                {lang === "es" ? "🇫🇷 Passage en Français" : "🇪🇸 Cambiar a Español"}
+              </button>
+            </div>
+
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
@@ -152,7 +188,7 @@ export default function Navbar({ isPlayingAudio, toggleAudio }: NavbarProps) {
               className="w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold text-sm tracking-wider uppercase flex items-center justify-center gap-2 mt-4"
             >
               <Share2 className="w-4 h-4" />
-              <span>Compartir por WhatsApp</span>
+              <span>{t("nav_share")} (WhatsApp)</span>
             </button>
           </div>
         </div>

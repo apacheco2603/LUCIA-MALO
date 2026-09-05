@@ -1,8 +1,12 @@
+"use client";
+
 import { useState } from "react";
 import { Heart, Sparkles, ChevronUp, Lock } from "lucide-react";
 import AdminModal from "@/components/AdminModal";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Footer() {
+  const { t } = useLanguage();
   const [adminModalOpen, setAdminModalOpen] = useState(false);
 
   return (
@@ -26,7 +30,7 @@ export default function Footer() {
         {/* Wedding Hashtag */}
         <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/10 border border-white/15 text-sm font-semibold tracking-wider text-gold-300 mb-8">
           <Sparkles className="w-4 h-4 text-gold-400" />
-          <span>#BodaLuciaYMalo2026</span>
+          <span>{t("footer_hashtag")}</span>
           <Sparkles className="w-4 h-4 text-gold-400" />
         </div>
 
@@ -34,23 +38,21 @@ export default function Footer() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-xs text-white/60">
           <p className="flex items-center justify-center gap-1">
-            Hecho con <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> para celebrar el amor eterno.
+            {t("footer_made_with")}
           </p>
 
           <span className="hidden sm:inline">•</span>
 
-          {/* Admin Novios Access button */}
           <button
             onClick={() => setAdminModalOpen(true)}
             className="text-gold-400 hover:text-gold-300 flex items-center gap-1 hover:underline transition-all"
           >
             <Lock className="w-3 h-3" />
-            <span>Panel Novios (RSVP Export)</span>
+            <span>{t("footer_admin_btn")}</span>
           </button>
         </div>
       </div>
 
-      {/* Back to Top Floating Arrow */}
       <a
         href="#hero"
         className="absolute top-6 right-6 p-3 rounded-full bg-white/10 hover:bg-gold-500 text-white transition-colors border border-white/20"
@@ -59,7 +61,6 @@ export default function Footer() {
         <ChevronUp className="w-5 h-5" />
       </a>
 
-      {/* Admin Panel Modal */}
       <AdminModal
         isOpen={adminModalOpen}
         onClose={() => setAdminModalOpen(false)}

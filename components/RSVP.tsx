@@ -2,7 +2,8 @@
 
 import { useState, useEffect, FormEvent } from "react";
 import confetti from "canvas-confetti";
-import { CheckCircle2, Heart, Send, Users, AlertCircle, Sparkles } from "lucide-react";
+import { CheckCircle2, Heart, Send, Users, AlertCircle } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface RSVPData {
   name: string;
@@ -17,6 +18,8 @@ interface RSVPData {
 }
 
 export default function RSVP() {
+  const { t } = useLanguage();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -32,20 +35,18 @@ export default function RSVP() {
     vegano: false,
     celiaco: false,
     sinLactosa: false,
-    alergias: false,
   });
 
   const [submittedData, setSubmittedData] = useState<RSVPData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // Check if user already confirmed RSVP
     const savedRSVP = localStorage.getItem("boda_lucia_rsvp");
     if (savedRSVP) {
       try {
         setSubmittedData(JSON.parse(savedRSVP));
       } catch (e) {
-        console.error("Error parsing saved RSVP", e);
+        console.error(e);
       }
     }
   }, []);
@@ -100,26 +101,23 @@ export default function RSVP() {
 
   return (
     <section id="rsvp" className="py-24 px-4 bg-sage-900 text-white relative overflow-hidden">
-      {/* Background Decor Shapes */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-gold-500/10 rounded-full filter blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-sage-500/20 rounded-full filter blur-3xl pointer-events-none" />
 
       <div className="max-w-4xl mx-auto relative z-10">
-        {/* Section Title */}
         <div className="text-center mb-16">
           <span className="text-xs uppercase tracking-widest text-gold-300 font-semibold block mb-2">
-            Confirmación de Asistencia
+            {t("rsvp_subtitle")}
           </span>
           <h2 className="font-serif text-4xl sm:text-5xl font-bold text-white mb-4">
-            ¿Nos Acompañas? (RSVP)
+            {t("rsvp_title")}
           </h2>
           <div className="w-24 h-1 bg-gold-500 mx-auto rounded-full mb-6" />
           <p className="text-white/80 font-light max-w-xl mx-auto text-sm sm:text-base">
-            Por favor, confirma tu asistencia antes del <strong>1 de Septiembre de 2026</strong> para poder organizar los lugares y el menú especial.
+            {t("rsvp_desc")}
           </p>
         </div>
 
-        {/* Form or Confirmed Card */}
         {submittedData ? (
           <div className="glass-panel-dark rounded-3xl p-8 sm:p-12 border border-gold-500/40 text-center max-w-2xl mx-auto shadow-2xl animate-fadeIn">
             <div className="w-16 h-16 rounded-full bg-gold-500/20 text-gold-400 flex items-center justify-center mx-auto mb-6 border border-gold-500/40">
@@ -127,48 +125,17 @@ export default function RSVP() {
             </div>
 
             <h3 className="font-serif text-3xl font-bold text-gold-200 mb-2">
-              ¡Asistencia Confirmada!
+              {t("rsvp_confirmed_title")}
             </h3>
             <p className="text-sm text-white/90 mb-8">
-              Gracias, <strong>{submittedData.name}</strong>. Hemos guardado tu confirmación con éxito.
+              {t("rsvp_confirmed_thanks")} (<strong>{submittedData.name}</strong>)
             </p>
-
-            <div className="bg-black/40 rounded-2xl p-6 text-left text-xs space-y-3 mb-8 border border-white/10">
-              <div className="flex justify-between border-b border-white/10 pb-2">
-                <span className="text-gold-300">Asistencia:</span>
-                <span className="font-semibold text-white">
-                  {submittedData.attending === "yes"
-                    ? "Sí, ¡allí estaré!"
-                    : "No podré asistir"}
-                </span>
-              </div>
-              {submittedData.attending === "yes" && (
-                <div className="flex justify-between border-b border-white/10 pb-2">
-                  <span className="text-gold-300">Nº de Asistentes:</span>
-                  <span className="font-semibold text-white">
-                    {submittedData.guestsCount} persona(s)
-                  </span>
-                </div>
-              )}
-              {submittedData.dedicatedSong && (
-                <div className="flex justify-between border-b border-white/10 pb-2">
-                  <span className="text-gold-300">Canción Dedicada:</span>
-                  <span className="font-semibold text-white italic">
-                    "{submittedData.dedicatedSong}"
-                  </span>
-                </div>
-              )}
-              <div className="flex justify-between pt-1">
-                <span className="text-gold-300">Fecha de Confirmación:</span>
-                <span className="text-white/70">{submittedData.submittedAt}</span>
-              </div>
-            </div>
 
             <button
               onClick={handleResetRSVP}
               className="text-xs text-gold-400 hover:text-gold-300 underline tracking-wider uppercase transition-colors"
             >
-              Modificar mi respuesta
+              {t("rsvp_modify_btn")}
             </button>
           </div>
         ) : (
@@ -176,7 +143,7 @@ export default function RSVP() {
             onSubmit={handleSubmit}
             className="glass-panel-dark rounded-3xl p-6 sm:p-10 border border-gold-500/30 space-y-8 shadow-2xl"
           >
-            {/* Attendance Choice */}
+            {/* Choice */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
                 type="button"
@@ -188,7 +155,7 @@ export default function RSVP() {
                 }`}
               >
                 <Heart className={`w-5 h-5 ${formData.attending === "yes" ? "fill-white" : ""}`} />
-                <span>¡Sí, asistiré a la boda!</span>
+                <span>{t("rsvp_yes")}</span>
               </button>
 
               <button
@@ -201,20 +168,20 @@ export default function RSVP() {
                 }`}
               >
                 <AlertCircle className="w-5 h-5" />
-                <span>Lamentablemente no podré</span>
+                <span>{t("rsvp_no")}</span>
               </button>
             </div>
 
-            {/* Guest Info inputs */}
+            {/* Inputs */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
                 <label className="block text-xs uppercase tracking-wider text-gold-300 font-semibold mb-2">
-                  Nombre Completo *
+                  {t("rsvp_name_label")}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Ej. María García López"
+                  placeholder="María García..."
                   value={formData.name}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
@@ -225,11 +192,11 @@ export default function RSVP() {
 
               <div>
                 <label className="block text-xs uppercase tracking-wider text-gold-300 font-semibold mb-2">
-                  Correo Electrónico
+                  {t("rsvp_email_label")}
                 </label>
                 <input
                   type="email"
-                  placeholder="ejemplo@correo.com"
+                  placeholder="exemple@email.com"
                   value={formData.email}
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
@@ -241,10 +208,9 @@ export default function RSVP() {
 
             {formData.attending === "yes" && (
               <>
-                {/* Number of Guests */}
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-gold-300 font-semibold mb-2">
-                    Número de Asistentes Confirmados
+                    {t("rsvp_guests_label")}
                   </label>
                   <div className="flex items-center gap-4">
                     <Users className="w-5 h-5 text-gold-400" />
@@ -258,25 +224,24 @@ export default function RSVP() {
                       }
                       className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-gold-500 text-sm font-medium"
                     >
-                      <option value={1} className="bg-sage-900 text-white">1 Persona (Solo yo)</option>
-                      <option value={2} className="bg-sage-900 text-white">2 Personas (Yo + 1 Acompañante)</option>
-                      <option value={3} className="bg-sage-900 text-white">3 Personas</option>
-                      <option value={4} className="bg-sage-900 text-white">Familia (4 Personas)</option>
+                      <option value={1} className="bg-sage-900 text-white">{t("rsvp_guests_1")}</option>
+                      <option value={2} className="bg-sage-900 text-white">{t("rsvp_guests_2")}</option>
+                      <option value={3} className="bg-sage-900 text-white">{t("rsvp_guests_3")}</option>
+                      <option value={4} className="bg-sage-900 text-white">{t("rsvp_guests_4")}</option>
                     </select>
                   </div>
                 </div>
 
-                {/* Dietary Requirements */}
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-gold-300 font-semibold mb-3">
-                    Restricciones Alimentarias / Alergias
+                    {t("rsvp_diet_label")}
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                     {[
-                      { key: "vegetariano", label: "Vegetariano" },
-                      { key: "vegano", label: "Vegano" },
-                      { key: "celiaco", label: "Celiaco / Sin Gluten" },
-                      { key: "sinLactosa", label: "Sin Lactosa" },
+                      { key: "vegetariano", label: t("rsvp_diet_veg") },
+                      { key: "vegano", label: t("rsvp_diet_vegan") },
+                      { key: "celiaco", label: t("rsvp_diet_celiac") },
+                      { key: "sinLactosa", label: t("rsvp_diet_lactose") },
                     ].map((item) => (
                       <label
                         key={item.key}
@@ -301,26 +266,15 @@ export default function RSVP() {
                       </label>
                     ))}
                   </div>
-
-                  <input
-                    type="text"
-                    placeholder="Detalles sobre alguna alergia en específico..."
-                    value={formData.dietaryNotes}
-                    onChange={(e) =>
-                      setFormData({ ...formData, dietaryNotes: e.target.value })
-                    }
-                    className="w-full mt-3 bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/40 focus:outline-none focus:border-gold-500 text-xs"
-                  />
                 </div>
 
-                {/* Dedicated Song */}
                 <div>
                   <label className="block text-xs uppercase tracking-wider text-gold-300 font-semibold mb-2">
-                    Canción indispensable para ti en la fiesta 🎵
+                    {t("rsvp_song_label")}
                   </label>
                   <input
                     type="text"
-                    placeholder="Ej. 'Perfect' - Ed Sheeran o 'Bailando' - Enrique Iglesias"
+                    placeholder="Ed Sheeran / Bad Bunny..."
                     value={formData.dedicatedSong}
                     onChange={(e) =>
                       setFormData({
@@ -334,14 +288,13 @@ export default function RSVP() {
               </>
             )}
 
-            {/* Message to Couple */}
             <div>
               <label className="block text-xs uppercase tracking-wider text-gold-300 font-semibold mb-2">
-                Unas Palabras o Mensaje para los Novios ❤️
+                {t("rsvp_msg_label")}
               </label>
               <textarea
                 rows={3}
-                placeholder="Escribe aquí un mensaje especial..."
+                placeholder="..."
                 value={formData.message}
                 onChange={(e) =>
                   setFormData({ ...formData, message: e.target.value })
@@ -350,20 +303,13 @@ export default function RSVP() {
               />
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting}
               className="w-full py-4 rounded-full bg-gold-500 hover:bg-gold-600 font-semibold text-sm tracking-wider uppercase transition-all shadow-lg shadow-gold-500/30 flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              {isSubmitting ? (
-                <span>Guardando confirmación...</span>
-              ) : (
-                <>
-                  <Send className="w-4 h-4" />
-                  <span>Enviar Confirmación</span>
-                </>
-              )}
+              <Send className="w-4 h-4" />
+              <span>{t("rsvp_submit_btn")}</span>
             </button>
           </form>
         )}

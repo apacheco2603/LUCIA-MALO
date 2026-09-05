@@ -15,8 +15,10 @@ import {
   Music,
   CalendarPlus,
 } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Details() {
+  const { t } = useLanguage();
   const [copiedIBAN, setCopiedIBAN] = useState(false);
   const ibanNumber = "ES91 2100 0418 4502 0005 1234";
 
@@ -62,32 +64,32 @@ export default function Details() {
   const itinerary = [
     {
       time: "17:30",
-      title: "Recepción de Invitados",
-      description: "Bienvenida a los asistentes en los jardines principales.",
+      title: t("itinerary_1_title"),
+      description: t("itinerary_1_desc"),
       icon: Sparkles,
     },
     {
       time: "18:00",
-      title: "Ceremonia de Enlace",
-      description: "Nuestra ceremonia donde nos diremos el 'Sí, quiero'.",
+      title: t("itinerary_2_title"),
+      description: t("itinerary_2_desc"),
       icon: Clock,
     },
     {
       time: "19:30",
-      title: "Cóctel de Bienvenida",
-      description: "Aperitivos, música en directo y brindis al atardecer.",
+      title: t("itinerary_3_title"),
+      description: t("itinerary_3_desc"),
       icon: Wine,
     },
     {
       time: "21:00",
-      title: "Banquete de Gala",
-      description: "Cena especial y sorpresas preparadas con cariño.",
+      title: t("itinerary_4_title"),
+      description: t("itinerary_4_desc"),
       icon: Utensils,
     },
     {
       time: "23:30",
-      title: "Gran Fiesta & Barra Libre",
-      description: "¡Música, baile y diversión hasta que salga el sol!",
+      title: t("itinerary_5_title"),
+      description: t("itinerary_5_desc"),
       icon: Music,
     },
   ];
@@ -97,21 +99,21 @@ export default function Details() {
       {/* Section Header */}
       <div className="text-center max-w-2xl mx-auto mb-16">
         <span className="text-xs uppercase tracking-widest text-gold-600 font-bold block mb-2">
-          Programa & Ubicación
+          {t("details_subtitle")}
         </span>
         <h2 className="font-serif text-4xl sm:text-5xl font-bold text-sage-900 mb-4">
-          Detalles de Nuestra Boda
+          {t("details_title")}
         </h2>
         <div className="w-24 h-1 bg-gold-500 mx-auto rounded-full mb-6" />
         <p className="text-gray-600 font-light">
-          Queremos que disfrutes cada segundo. Aquí tienes toda la información para planificar tu asistencia.
+          {t("details_desc")}
         </p>
       </div>
 
       {/* Itinerary Timeline */}
       <div className="mb-24">
         <h3 className="font-serif text-2xl sm:text-3xl text-center text-sage-900 mb-12">
-          Itinerario del Evento
+          {t("details_itinerary_title")}
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 relative">
@@ -148,10 +150,10 @@ export default function Details() {
           </div>
           <div>
             <h4 className="font-serif text-lg font-bold text-sage-900">
-              Guarda el Evento en tu Calendario
+              {t("cal_title")}
             </h4>
             <p className="text-xs text-gray-500">
-              Sábado, 3 de Octubre de 2026 • 17:30 H
+              {t("hero_date")} • 17:30 H
             </p>
           </div>
         </div>
@@ -163,7 +165,7 @@ export default function Details() {
             rel="noopener noreferrer"
             className="flex-1 sm:flex-initial px-5 py-3 rounded-xl bg-sage-900 hover:bg-sage-800 text-white font-semibold text-xs tracking-wider uppercase transition-colors flex items-center justify-center gap-2 shadow-sm"
           >
-            <span>Google Calendar</span>
+            <span>{t("cal_btn_google")}</span>
             <ExternalLink className="w-4 h-4 text-gold-400" />
           </a>
 
@@ -171,7 +173,7 @@ export default function Details() {
             onClick={downloadICS}
             className="flex-1 sm:flex-initial px-5 py-3 rounded-xl bg-gold-500 hover:bg-gold-600 text-white font-semibold text-xs tracking-wider uppercase transition-colors flex items-center justify-center gap-2 shadow-sm"
           >
-            <span>Apple / iCal</span>
+            <span>{t("cal_btn_ical")}</span>
           </button>
         </div>
       </div>
@@ -185,18 +187,18 @@ export default function Details() {
               <MapPin className="w-6 h-6" />
             </div>
             <h3 className="font-serif text-2xl font-bold text-sage-900 mb-3">
-              ¿Dónde se celebra?
+              {t("venue_title")}
             </h3>
             <p className="text-sm font-semibold text-gold-600 mb-1">
-              Finca La Gaivota
+              {t("venue_name")}
             </p>
             <p className="text-xs text-gray-600 mb-6">
-              Carretera de La Coruña Km 22, 28224 Madrid, España
+              {t("venue_address")}
             </p>
 
             <div className="bg-sage-100/60 rounded-2xl p-4 text-xs text-gray-700 mb-6 space-y-2">
-              <p>🚗 <strong>Parking amplio</strong> disponible en el recinto.</p>
-              <p>🚌 <strong>Autobuses de regreso</strong> a Madrid a las 02:30 y 05:00.</p>
+              <p>🚗 <strong>Parking</strong> {t("venue_parking")}</p>
+              <p>🚌 <strong>Autobuses</strong> {t("venue_bus")}</p>
             </div>
           </div>
 
@@ -206,7 +208,7 @@ export default function Details() {
             rel="noopener noreferrer"
             className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-sage-900 text-white font-medium text-xs tracking-wider uppercase hover:bg-sage-700 transition-colors shadow-md"
           >
-            <span>Ver en Google Maps</span>
+            <span>{t("venue_maps_btn")}</span>
             <ExternalLink className="w-4 h-4" />
           </a>
         </div>
@@ -218,30 +220,24 @@ export default function Details() {
               <Shirt className="w-6 h-6" />
             </div>
             <h3 className="font-serif text-2xl font-bold text-sage-900 mb-3">
-              Código de Vestimenta
+              {t("dress_title")}
             </h3>
             <p className="text-sm font-semibold text-gold-600 mb-4">
-              Formal / Elegante (Wedding Chic)
+              {t("dress_subtitle")}
             </p>
 
             <div className="space-y-4 text-xs text-gray-600 font-light">
               <div className="p-3 bg-white/70 rounded-xl border border-gray-100">
-                <strong className="block text-sage-900 font-semibold mb-1">
-                  Ellas 👗:
-                </strong>
-                Vestido largo o de cóctel elegante. Sugerimos colores vivos o tonos pastel (el color blanco y marfil están reservados para la novia).
+                {t("dress_women")}
               </div>
               <div className="p-3 bg-white/70 rounded-xl border border-gray-100">
-                <strong className="block text-sage-900 font-semibold mb-1">
-                  Ellos 👔:
-                </strong>
-                Traje oscuro clásico, esmoquin o chaqueta formal con corbata o pajarita.
+                {t("dress_men")}
               </div>
             </div>
           </div>
 
           <div className="mt-6 text-center text-xs text-gold-700 font-medium italic">
-            "¡Lo más importante es tu sonrisa y tus ganas de bailar!"
+            {t("dress_quote")}
           </div>
         </div>
 
@@ -252,16 +248,15 @@ export default function Details() {
               <Gift className="w-6 h-6" />
             </div>
             <h3 className="font-serif text-2xl font-bold text-sage-900 mb-3">
-              Muestra de Cariño
+              {t("gift_title")}
             </h3>
             <p className="text-xs text-gray-600 leading-relaxed mb-6 font-light">
-              El mejor regalo que nos puedes hacer es compartir nuestro gran día. Sin embargo, si deseas contribuir a nuestra luna de miel, ponemos a tu disposición nuestro número de cuenta:
+              {t("gift_desc")}
             </p>
 
-            {/* IBAN Box */}
             <div className="bg-sage-900 text-white rounded-2xl p-4 mb-4 text-center relative overflow-hidden">
               <span className="text-[10px] uppercase text-gold-300 tracking-wider block mb-1">
-                Número de Cuenta (IBAN)
+                {t("gift_iban_label")}
               </span>
               <p className="font-mono text-sm tracking-wider font-semibold text-white">
                 {ibanNumber}
@@ -280,12 +275,12 @@ export default function Details() {
             {copiedIBAN ? (
               <>
                 <Check className="w-4 h-4" />
-                <span>¡IBAN Copiado al Portapapeles!</span>
+                <span>{t("gift_copied_btn")}</span>
               </>
             ) : (
               <>
                 <Copy className="w-4 h-4" />
-                <span>Copiar Número de Cuenta</span>
+                <span>{t("gift_copy_btn")}</span>
               </>
             )}
           </button>

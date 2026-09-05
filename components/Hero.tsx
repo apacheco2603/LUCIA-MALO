@@ -2,18 +2,21 @@
 
 import { useState, useEffect } from "react";
 import { Calendar, MapPin, Heart, ChevronDown, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Hero() {
+  const { lang, t } = useLanguage();
+
   // Target wedding date: October 3, 2026
   const weddingDate = new Date("2026-10-03T18:00:00").getTime();
 
-  // Dynamic photos array of the couple (currently 5, ready for 12+)
+  // Dynamic photos array of the couple
   const couplePhotos = [
-    { url: "/images/couple/photo_1.jpg", caption: "Aventuras en el Desierto" },
-    { url: "/images/couple/photo_2.jpg", caption: "Paseos Junto al Mar" },
-    { url: "/images/couple/photo_3.jpg", caption: "Risas & Complicidad" },
-    { url: "/images/couple/photo_4.jpg", caption: "Tardes de Viaje" },
-    { url: "/images/couple/photo_5.jpg", caption: "Miradores Inolvidables" },
+    { url: "/images/couple/photo_1.jpg", caption: lang === "fr" ? "Aventures dans le Désert" : "Aventuras en el Desierto" },
+    { url: "/images/couple/photo_2.jpg", caption: lang === "fr" ? "Promenades au Bord de la Mer" : "Paseos Junto al Mar" },
+    { url: "/images/couple/photo_3.jpg", caption: lang === "fr" ? "Rires & Complicité" : "Risas & Complicidad" },
+    { url: "/images/couple/photo_4.jpg", caption: lang === "fr" ? "Escapades en Voyage" : "Tardes de Viaje" },
+    { url: "/images/couple/photo_5.jpg", caption: lang === "fr" ? "Panoramas Inoubliables" : "Miradores Inolvidables" },
   ];
 
   const [currentPhotoIdx, setCurrentPhotoIdx] = useState(0);
@@ -75,7 +78,7 @@ export default function Hero() {
       id="hero"
       className="relative min-h-screen flex items-center justify-center pt-28 pb-16 px-4 overflow-hidden bg-sage-900 text-white"
     >
-      {/* Dynamic Background Image Crossfade with Vignette */}
+      {/* Dynamic Background Image Crossfade */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         {couplePhotos.map((photo, idx) => (
           <div
@@ -92,7 +95,6 @@ export default function Hero() {
             />
           </div>
         ))}
-        {/* Dark Elegant Gradient Overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-sage-900 via-sage-900/70 to-sage-900/60" />
         <div className="absolute inset-0 bg-black/30" />
       </div>
@@ -104,7 +106,7 @@ export default function Hero() {
         <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-gold-500/40 mb-6 animate-bounce">
           <Heart className="w-4 h-4 text-gold-400 fill-gold-400" />
           <span className="font-serif text-sm tracking-widest uppercase text-gold-200">
-            ¡Nos Casamos!
+            {t("hero_we_are_getting_married")}
           </span>
           <Heart className="w-4 h-4 text-gold-400 fill-gold-400" />
         </div>
@@ -115,10 +117,10 @@ export default function Hero() {
         </h1>
 
         <p className="text-sm sm:text-lg md:text-xl font-serif italic text-white/90 mb-8 max-w-2xl mx-auto font-light">
-          "Hay momentos en la vida que son inolvidables, pero compartirlos con quienes más queremos los hace eternos."
+          {t("hero_quote")}
         </p>
 
-        {/* Featured Photo Frame Card with Manual Slider Controls - Ensures Faces Are Fully Visible! */}
+        {/* Featured Photo Frame Card */}
         <div className="relative w-full max-w-md mx-auto mb-10 group">
           <div className="glass-panel-dark rounded-3xl p-3 sm:p-4 border border-gold-500/40 shadow-2xl overflow-hidden relative">
             
@@ -129,7 +131,7 @@ export default function Hero() {
                 className="w-full h-full object-cover object-[center_20%] transition-transform duration-700 hover:scale-105"
               />
 
-              {/* Photo Caption Badge */}
+              {/* Caption */}
               <div className="absolute bottom-3 left-3 right-3 bg-black/60 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/15 flex items-center justify-between text-xs text-white">
                 <span className="font-medium tracking-wide flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-gold-400" />
@@ -141,11 +143,11 @@ export default function Hero() {
               </div>
             </div>
 
-            {/* Slider Navigation Buttons */}
+            {/* Slider Controls */}
             <button
               onClick={handlePrevPhoto}
               className="absolute left-5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 hover:bg-gold-500 text-white backdrop-blur-md flex items-center justify-center transition-colors border border-white/20"
-              aria-label="Foto anterior"
+              aria-label="Anterior"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -153,7 +155,7 @@ export default function Hero() {
             <button
               onClick={handleNextPhoto}
               className="absolute right-5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 hover:bg-gold-500 text-white backdrop-blur-md flex items-center justify-center transition-colors border border-white/20"
-              aria-label="Foto siguiente"
+              aria-label="Siguiente"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -170,7 +172,6 @@ export default function Hero() {
                     ? "w-6 bg-gold-400"
                     : "w-2 bg-white/30 hover:bg-white/60"
                 }`}
-                aria-label={`Ir a foto ${idx + 1}`}
               />
             ))}
           </div>
@@ -180,18 +181,18 @@ export default function Hero() {
         <div className="flex flex-wrap justify-center items-center gap-4 mb-8 text-xs sm:text-sm font-medium">
           <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/15">
             <Calendar className="w-4 h-4 text-gold-400" />
-            <span>Sábado, 3 de Octubre de 2026</span>
+            <span>{t("hero_date")}</span>
           </div>
           <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/15">
             <MapPin className="w-4 h-4 text-gold-400" />
-            <span>Finca La Gaivota, Madrid</span>
+            <span>{t("hero_location")}</span>
           </div>
         </div>
 
-        {/* Real-Time Dynamic Countdown Card */}
+        {/* Countdown */}
         <div className="glass-panel-dark rounded-3xl p-6 sm:p-8 max-w-xl w-full mx-auto mb-8 border border-gold-500/40 shadow-2xl">
           <h2 className="text-[11px] uppercase tracking-widest text-gold-300 font-semibold mb-4">
-            Cuenta Regresiva para Nuestro Gran Día
+            {t("hero_countdown_title")}
           </h2>
           <div className="grid grid-cols-4 gap-3 sm:gap-6">
             <div className="flex flex-col items-center">
@@ -199,7 +200,7 @@ export default function Hero() {
                 {timeLeft.days}
               </span>
               <span className="text-[10px] sm:text-xs tracking-wider uppercase text-gold-200">
-                Días
+                {t("hero_days")}
               </span>
             </div>
             <div className="flex flex-col items-center">
@@ -207,7 +208,7 @@ export default function Hero() {
                 {timeLeft.hours}
               </span>
               <span className="text-[10px] sm:text-xs tracking-wider uppercase text-gold-200">
-                Horas
+                {t("hero_hours")}
               </span>
             </div>
             <div className="flex flex-col items-center">
@@ -215,7 +216,7 @@ export default function Hero() {
                 {timeLeft.minutes}
               </span>
               <span className="text-[10px] sm:text-xs tracking-wider uppercase text-gold-200">
-                Minutos
+                {t("hero_minutes")}
               </span>
             </div>
             <div className="flex flex-col items-center">
@@ -223,7 +224,7 @@ export default function Hero() {
                 {timeLeft.seconds}
               </span>
               <span className="text-[10px] sm:text-xs tracking-wider uppercase text-gold-200">
-                Segundos
+                {t("hero_seconds")}
               </span>
             </div>
           </div>
@@ -235,22 +236,21 @@ export default function Hero() {
             href="#rsvp"
             className="w-full sm:w-auto px-8 py-4 rounded-full bg-gold-500 hover:bg-gold-600 text-white font-semibold text-xs tracking-wider uppercase transition-all transform hover:-translate-y-1 shadow-lg shadow-gold-500/30"
           >
-            Confirmar Asistencia (RSVP)
+            {t("hero_btn_rsvp")}
           </a>
           <a
             href="#spotify"
             className="w-full sm:w-auto px-8 py-4 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/30 backdrop-blur-md font-semibold text-xs tracking-wider uppercase transition-all"
           >
-            Sugerir Canción Spotify
+            {t("hero_btn_spotify")}
           </a>
         </div>
       </div>
 
-      {/* Down Arrow Scroll Indicator */}
       <a
         href="#detalles"
         className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white/60 hover:text-gold-400 transition-colors animate-bounce cursor-pointer z-10"
-        aria-label="Ir a detalles"
+        aria-label="Detalles"
       >
         <ChevronDown className="w-7 h-7" />
       </a>

@@ -1,19 +1,8 @@
 "use client";
 
 import { useState, useEffect, ChangeEvent, FormEvent } from "react";
-import {
-  Camera,
-  Upload,
-  Heart,
-  Download,
-  Maximize2,
-  X,
-  Plus,
-  Check,
-  Sparkles,
-  Share2,
-  MessageSquare,
-} from "lucide-react";
+import { Camera, Upload, Heart, Download, Maximize2, X } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface PhotoItem {
   id: string;
@@ -28,56 +17,58 @@ interface PhotoItem {
 }
 
 export default function PhotoRepository() {
+  const { t } = useLanguage();
+
   const defaultPhotos: PhotoItem[] = [
     {
       id: "p1",
       url: "/images/couple/photo_1.jpg",
-      title: "Aventuras en el Desierto",
+      title: "Desierto",
       author: "Lucía & Malo",
       category: "coctel",
       likes: 42,
       commentsCount: 5,
-      uploadedAt: "Recuerdos",
+      uploadedAt: "2026",
     },
     {
       id: "p2",
       url: "/images/couple/photo_2.jpg",
-      title: "Paseos Junto al Mar",
+      title: "Playa",
       author: "Lucía & Malo",
       category: "fiesta",
       likes: 38,
       commentsCount: 8,
-      uploadedAt: "Recuerdos",
+      uploadedAt: "2026",
     },
     {
       id: "p3",
       url: "/images/couple/photo_3.jpg",
-      title: "Risas & Complicidad",
+      title: "Risas",
       author: "Lucía & Malo",
       category: "invitados",
       likes: 56,
       commentsCount: 12,
-      uploadedAt: "Recuerdos",
+      uploadedAt: "2026",
     },
     {
       id: "p4",
       url: "/images/couple/photo_4.jpg",
-      title: "Tardes de Viaje",
+      title: "Viaje",
       author: "Lucía & Malo",
       category: "coctel",
       likes: 31,
       commentsCount: 4,
-      uploadedAt: "Recuerdos",
+      uploadedAt: "2026",
     },
     {
       id: "p5",
       url: "/images/couple/photo_5.jpg",
-      title: "Miradores Inolvidables",
+      title: "Mirador",
       author: "Lucía & Malo",
       category: "ceremonia",
       likes: 49,
       commentsCount: 9,
-      uploadedAt: "Recuerdos",
+      uploadedAt: "2026",
     },
   ];
 
@@ -88,7 +79,6 @@ export default function PhotoRepository() {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [likedPhotos, setLikedPhotos] = useState<Record<string, boolean>>({});
 
-  // New photo form state
   const [newTitle, setNewTitle] = useState("");
   const [newAuthor, setNewAuthor] = useState("");
   const [newCategory, setNewCategory] = useState<PhotoItem["category"]>("fiesta");
@@ -131,19 +121,18 @@ export default function PhotoRepository() {
     const newPhoto: PhotoItem = {
       id: "p_" + Date.now(),
       url: imagePreview,
-      title: newTitle.trim() || "Recuerdo de la Boda",
-      author: newAuthor.trim() || "Invitado Especial",
+      title: newTitle.trim() || "Boda Lucía & Malo",
+      author: newAuthor.trim() || "Invitado",
       category: newCategory,
       likes: 1,
       commentsCount: 0,
-      uploadedAt: "Recién subida",
+      uploadedAt: "Recent",
       isUserUploaded: true,
     };
 
     const updated = [newPhoto, ...photos];
     savePhotos(updated);
 
-    // Reset form
     setNewTitle("");
     setNewAuthor("");
     setImagePreview(null);
@@ -186,34 +175,33 @@ export default function PhotoRepository() {
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
         <div>
           <span className="text-xs uppercase tracking-widest text-gold-600 font-bold block mb-2">
-            Galería Compartida de los Invitados
+            {t("photos_subtitle")}
           </span>
           <h2 className="font-serif text-4xl sm:text-5xl font-bold text-sage-900 mb-4">
-            Repositorio de Fotos de la Boda
+            {t("photos_title")}
           </h2>
           <p className="text-gray-600 font-light max-w-xl text-sm sm:text-base">
-            ¡Queremos ver la boda desde tus ojos! Sube tus mejores fotos tomadas durante la fiesta y descarga los recuerdos del evento.
+            {t("photos_desc")}
           </p>
         </div>
 
-        {/* Upload Action Button */}
         <button
           onClick={() => setUploadModalOpen(true)}
           className="inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-full bg-gold-500 hover:bg-gold-600 text-white font-semibold text-xs tracking-wider uppercase transition-all shadow-lg shadow-gold-500/20 transform hover:-translate-y-0.5"
         >
           <Camera className="w-5 h-5" />
-          <span>Subir Mis Fotos</span>
+          <span>{t("photos_upload_btn")}</span>
         </button>
       </div>
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap gap-2 mb-10 pb-2 border-b border-gold-500/20">
         {[
-          { key: "todas", label: "Todas las Fotos" },
-          { key: "ceremonia", label: "Ceremonia" },
-          { key: "coctel", label: "Cóctel" },
-          { key: "fiesta", label: "Gran Fiesta" },
-          { key: "invitados", label: "Invitados" },
+          { key: "todas", label: t("photos_tab_all") },
+          { key: "ceremonia", label: t("photos_tab_ceremony") },
+          { key: "coctel", label: t("photos_tab_cocktail") },
+          { key: "fiesta", label: t("photos_tab_party") },
+          { key: "invitados", label: t("photos_tab_guests") },
         ].map((tab) => (
           <button
             key={tab.key}
@@ -257,11 +245,10 @@ export default function PhotoRepository() {
               </span>
             </div>
 
-            {/* Photo Footer info */}
             <div className="p-4 flex items-center justify-between text-xs text-gray-600">
               <div>
                 <p className="font-semibold text-sage-900">{photo.title}</p>
-                <p className="text-[11px] text-gray-400">por {photo.author}</p>
+                <p className="text-[11px] text-gray-400">par {photo.author}</p>
               </div>
 
               <div className="flex items-center gap-3">
@@ -298,15 +285,11 @@ export default function PhotoRepository() {
             </button>
 
             <h3 className="font-serif text-2xl font-bold text-gold-300 mb-1">
-              Añadir Foto al Repositorio
+              {t("photos_upload_btn")}
             </h3>
-            <p className="text-xs text-white/70 mb-6">
-              Selecciona o toma una fotografía con tu dispositivo para añadirla a la galería de la boda.
-            </p>
 
-            <form onSubmit={handleAddPhotoSubmit} className="space-y-4">
-              {/* File Upload Zone */}
-              <div className="border-2 border-dashed border-gold-500/40 hover:border-gold-400 rounded-2xl p-6 text-center bg-white/5 cursor-pointer relative">
+            <form onSubmit={handleAddPhotoSubmit} className="space-y-4 mt-4">
+              <div className="border-2 border-dashed border-gold-500/40 rounded-2xl p-6 text-center bg-white/5 cursor-pointer relative">
                 <input
                   type="file"
                   accept="image/*"
@@ -318,7 +301,7 @@ export default function PhotoRepository() {
                   <div className="relative aspect-video rounded-xl overflow-hidden">
                     <img
                       src={imagePreview}
-                      alt="Vista previa"
+                      alt="Preview"
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -326,22 +309,16 @@ export default function PhotoRepository() {
                   <div className="flex flex-col items-center py-4">
                     <Upload className="w-10 h-10 text-gold-400 mb-2" />
                     <span className="text-sm font-medium text-white">
-                      Haz clic o arrastra una imagen aquí
-                    </span>
-                    <span className="text-[11px] text-white/50 mt-1">
-                      Soporta JPG, PNG, WEBP
+                      Click / Drop Photo
                     </span>
                   </div>
                 )}
               </div>
 
               <div>
-                <label className="block text-xs uppercase tracking-wider text-gold-300 mb-1 font-semibold">
-                  Título o Descripción Corta
-                </label>
                 <input
                   type="text"
-                  placeholder="Ej. Bailando con la novia"
+                  placeholder="Title / Description..."
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-gold-500"
@@ -349,36 +326,26 @@ export default function PhotoRepository() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs uppercase tracking-wider text-gold-300 mb-1 font-semibold">
-                    Tu Nombre
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Tu nombre..."
-                    value={newAuthor}
-                    onChange={(e) => setNewAuthor(e.target.value)}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-gold-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs uppercase tracking-wider text-gold-300 mb-1 font-semibold">
-                    Categoría
-                  </label>
-                  <select
-                    value={newCategory}
-                    onChange={(e) =>
-                      setNewCategory(e.target.value as PhotoItem["category"])
-                    }
-                    className="w-full bg-sage-900 border border-white/20 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-gold-500"
-                  >
-                    <option value="fiesta">Fiesta</option>
-                    <option value="ceremonia">Ceremonia</option>
-                    <option value="coctel">Cóctel</option>
-                    <option value="invitados">Invitados</option>
-                  </select>
-                </div>
+                <input
+                  type="text"
+                  required
+                  placeholder="Your Name..."
+                  value={newAuthor}
+                  onChange={(e) => setNewAuthor(e.target.value)}
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-gold-500"
+                />
+                <select
+                  value={newCategory}
+                  onChange={(e) =>
+                    setNewCategory(e.target.value as PhotoItem["category"])
+                  }
+                  className="w-full bg-sage-900 border border-white/20 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-gold-500"
+                >
+                  <option value="fiesta">Fiesta / Fête</option>
+                  <option value="ceremonia">Ceremonia / Cérémonie</option>
+                  <option value="coctel">Cóctel / Cocktail</option>
+                  <option value="invitados">Invitados / Invités</option>
+                </select>
               </div>
 
               <button
@@ -386,7 +353,7 @@ export default function PhotoRepository() {
                 disabled={!imagePreview}
                 className="w-full py-3.5 rounded-full bg-gold-500 hover:bg-gold-600 font-semibold text-xs tracking-wider uppercase transition-all shadow-lg shadow-gold-500/20 disabled:opacity-40"
               >
-                Publicar Foto en la Galería
+                {t("photos_upload_btn")}
               </button>
             </form>
           </div>
@@ -418,7 +385,7 @@ export default function PhotoRepository() {
                   {selectedPhoto.title}
                 </h4>
                 <p className="text-xs text-white/70">
-                  Subida por {selectedPhoto.author} • {selectedPhoto.uploadedAt}
+                  {selectedPhoto.author}
                 </p>
               </div>
 
@@ -436,17 +403,8 @@ export default function PhotoRepository() {
                       likedPhotos[selectedPhoto.id] ? "fill-white" : ""
                     }`}
                   />
-                  <span>{selectedPhoto.likes} Me gusta</span>
+                  <span>{selectedPhoto.likes} {t("photos_like")}</span>
                 </button>
-
-                <a
-                  href={selectedPhoto.url}
-                  download={`boda-lucia-malo-${selectedPhoto.id}.jpg`}
-                  className="p-2.5 rounded-full bg-white/10 hover:bg-gold-500 transition-colors text-white"
-                  title="Descargar Foto"
-                >
-                  <Download className="w-4 h-4" />
-                </a>
               </div>
             </div>
           </div>

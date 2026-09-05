@@ -7,12 +7,11 @@ import {
   Pause,
   Heart,
   Plus,
-  Search,
   ExternalLink,
   Disc,
-  Sparkles,
   Volume2,
 } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface SongItem {
   id: string;
@@ -27,12 +26,14 @@ interface SongItem {
 }
 
 export default function SpotifyRepository() {
+  const { t } = useLanguage();
+
   const initialSongs: SongItem[] = [
     {
       id: "s1",
       title: "Vivienne",
       artist: "Sundara Karma",
-      addedBy: "Lucía (La Novia)",
+      addedBy: "Lucía",
       genre: "Indie Pop",
       votes: 35,
       spotifyUrl: "https://open.spotify.com/track/1y2312",
@@ -42,7 +43,7 @@ export default function SpotifyRepository() {
       id: "s2",
       title: "Danza Kuduro",
       artist: "Don Omar, Lucenzo",
-      addedBy: "Malo (El Novio)",
+      addedBy: "Malo",
       genre: "Fiesta / Reggaeton",
       votes: 48,
       spotifyUrl: "https://open.spotify.com/track/2x123",
@@ -52,21 +53,11 @@ export default function SpotifyRepository() {
       id: "s3",
       title: "Love On Top",
       artist: "Beyoncé",
-      addedBy: "Laura (Dama de Honor)",
+      addedBy: "Laura",
       genre: "Pop / Disco",
       votes: 29,
       spotifyUrl: "https://open.spotify.com/track/3y456",
       coverUrl: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=200&q=80",
-    },
-    {
-      id: "s4",
-      title: "Caminando por la Vida",
-      artist: "Melendi",
-      addedBy: "Tío Paco",
-      genre: "Pop Español",
-      votes: 22,
-      spotifyUrl: "https://open.spotify.com/track/4z789",
-      coverUrl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=200&q=80",
     },
   ];
 
@@ -74,7 +65,6 @@ export default function SpotifyRepository() {
   const [votedSongs, setVotedSongs] = useState<Record<string, boolean>>({});
   const [playingSongId, setPlayingSongId] = useState<string | null>(null);
 
-  // Form State
   const [songTitle, setSongTitle] = useState("");
   const [artistName, setArtistName] = useState("");
   const [guestName, setGuestName] = useState("");
@@ -106,7 +96,7 @@ export default function SpotifyRepository() {
       id: "song_" + Date.now(),
       title: songTitle.trim(),
       artist: artistName.trim(),
-      addedBy: guestName.trim() || "Invitado de la Boda",
+      addedBy: guestName.trim() || "Invitado",
       genre: genreTag,
       votes: 1,
       spotifyUrl: `https://open.spotify.com/search/${encodeURIComponent(
@@ -153,43 +143,37 @@ export default function SpotifyRepository() {
 
   return (
     <section id="spotify" className="py-24 px-4 max-w-7xl mx-auto">
-      {/* Title */}
       <div className="text-center max-w-2xl mx-auto mb-16">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold uppercase tracking-wider mb-3">
           <Disc className="w-4 h-4 animate-spin text-emerald-600" />
-          <span>Spotify Playlist Oficial</span>
+          <span>{t("spotify_badge")}</span>
         </div>
         <h2 className="font-serif text-4xl sm:text-5xl font-bold text-sage-900 mb-4">
-          Añade tus Canciones para la Fiesta
+          {t("spotify_title")}
         </h2>
         <div className="w-24 h-1 bg-gold-500 mx-auto rounded-full mb-6" />
         <p className="text-gray-600 font-light text-sm sm:text-base">
-          ¡Queremos que nadie se quede sin bailar! Propón los temas que quieres escuchar durante la fiesta y vota por tus favoritos.
+          {t("spotify_desc")}
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Column: Song Request Form & Official Spotify Player */}
         <div className="lg:col-span-5 space-y-8">
-          {/* Add Song Form */}
           <div className="glass-card rounded-3xl p-6 sm:p-8 border border-gold-500/30">
             <h3 className="font-serif text-2xl font-bold text-sage-900 mb-2 flex items-center gap-2">
               <Plus className="w-6 h-6 text-gold-500" />
-              <span>Pedir una Canción</span>
+              <span>{t("spotify_form_title")}</span>
             </h3>
-            <p className="text-xs text-gray-500 mb-6">
-              Esta canción se sugerirá directamente al DJ del evento.
-            </p>
 
-            <form onSubmit={handleAddSong} className="space-y-4">
+            <form onSubmit={handleAddSong} className="space-y-4 mt-4">
               <div>
                 <label className="block text-xs font-semibold text-sage-900 uppercase tracking-wider mb-1">
-                  Nombre de la Canción *
+                  {t("spotify_song_title_label")}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Ej. Noche de Bodas, Tití Me Preguntó..."
+                  placeholder="Title..."
                   value={songTitle}
                   onChange={(e) => setSongTitle(e.target.value)}
                   className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-sage-900 focus:outline-none focus:border-gold-500"
@@ -198,12 +182,12 @@ export default function SpotifyRepository() {
 
               <div>
                 <label className="block text-xs font-semibold text-sage-900 uppercase tracking-wider mb-1">
-                  Artista / Grupo *
+                  {t("spotify_artist_label")}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Ej. Bad Bunny, Shakira, Queen..."
+                  placeholder="Artist..."
                   value={artistName}
                   onChange={(e) => setArtistName(e.target.value)}
                   className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-sage-900 focus:outline-none focus:border-gold-500"
@@ -213,11 +197,11 @@ export default function SpotifyRepository() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-sage-900 uppercase tracking-wider mb-1">
-                    Tu Nombre
+                    {t("spotify_your_name")}
                   </label>
                   <input
                     type="text"
-                    placeholder="Tu nombre..."
+                    placeholder="Name..."
                     value={guestName}
                     onChange={(e) => setGuestName(e.target.value)}
                     className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-sage-900 focus:outline-none focus:border-gold-500"
@@ -225,7 +209,7 @@ export default function SpotifyRepository() {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-sage-900 uppercase tracking-wider mb-1">
-                    Género / Estilo
+                    {t("spotify_genre_label")}
                   </label>
                   <select
                     value={genreTag}
@@ -235,7 +219,6 @@ export default function SpotifyRepository() {
                     <option value="Pop / Fiesta">Pop / Fiesta</option>
                     <option value="Reggaeton / Latino">Reggaeton / Latino</option>
                     <option value="Rock / Indie">Rock / Indie</option>
-                    <option value="Clásicos Boda">Clásicos Boda</option>
                     <option value="Electrónica / Dance">Electrónica</option>
                   </select>
                 </div>
@@ -246,66 +229,20 @@ export default function SpotifyRepository() {
                 className="w-full py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs tracking-wider uppercase transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2"
               >
                 <Music className="w-4 h-4" />
-                <span>Enviar Canción a la Playlist</span>
+                <span>{t("spotify_add_btn")}</span>
               </button>
             </form>
           </div>
-
-          {/* Spotify Direct Playlist Widget */}
-          <div className="glass-panel-dark text-white rounded-3xl p-6 border border-emerald-500/30">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-black font-bold">
-                  <Music className="w-5 h-5 fill-black" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-sm">Playlist Oficial Boda</h4>
-                  <p className="text-[11px] text-emerald-300">Lucía & Malo 2026</p>
-                </div>
-              </div>
-
-              <a
-                href="https://open.spotify.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-colors"
-              >
-                <span>Abrir App</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
-
-            {/* Embedded Web Player Card */}
-            <div className="bg-black/60 rounded-2xl p-4 border border-white/10 flex items-center gap-4">
-              <img
-                src="/images/party.jpg"
-                alt="Spotify Cover"
-                className="w-16 h-16 rounded-xl object-cover"
-              />
-              <div className="flex-1 overflow-hidden">
-                <p className="text-xs font-semibold text-white truncate">
-                  Boda Lucía & Malo (La Lista Definitiva)
-                </p>
-                <p className="text-[11px] text-gray-400 mt-0.5">
-                  {songs.length + 15} canciones • 2h 45m
-                </p>
-                <div className="w-full bg-white/20 h-1.5 rounded-full mt-2 overflow-hidden">
-                  <div className="bg-emerald-500 h-full w-2/3 rounded-full animate-pulse" />
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Right Column: Songs List with Voting */}
         <div className="lg:col-span-7">
           <div className="glass-card rounded-3xl p-6 sm:p-8 border border-gold-500/30">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
               <h3 className="font-serif text-2xl font-bold text-sage-900">
-                Canciones Sugeridas por los Invitados ({songs.length})
+                {t("spotify_suggested_title")} ({songs.length})
               </h3>
               <span className="text-xs text-gray-500 font-medium">
-                Ordenadas por Votos
+                {t("spotify_voted_by")}
               </span>
             </div>
 
@@ -315,7 +252,6 @@ export default function SpotifyRepository() {
                   key={song.id}
                   className="bg-white/80 rounded-2xl p-4 border border-gray-100 hover:border-gold-500/40 transition-all flex items-center justify-between gap-4 shadow-sm"
                 >
-                  {/* Left info & audio trigger */}
                   <div className="flex items-center gap-3 overflow-hidden">
                     <span className="font-serif text-lg font-bold text-gray-400 w-6 text-center">
                       #{index + 1}
@@ -328,7 +264,6 @@ export default function SpotifyRepository() {
                           ? "bg-emerald-600 text-white animate-spin"
                           : "bg-gold-100 text-gold-700 hover:bg-gold-500 hover:text-white"
                       }`}
-                      title="Probar sonido"
                     >
                       {playingSongId === song.id ? (
                         <Volume2 className="w-5 h-5" />
@@ -344,18 +279,9 @@ export default function SpotifyRepository() {
                       <p className="text-xs text-gray-500 truncate">
                         {song.artist}
                       </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] bg-sage-100 text-sage-800 px-2 py-0.5 rounded-md font-medium">
-                          {song.genre}
-                        </span>
-                        <span className="text-[10px] text-gray-400">
-                          Pedida por: {song.addedBy}
-                        </span>
-                      </div>
                     </div>
                   </div>
 
-                  {/* Vote & Spotify link */}
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => handleVoteSong(song.id)}
@@ -372,16 +298,6 @@ export default function SpotifyRepository() {
                       />
                       <span>{song.votes}</span>
                     </button>
-
-                    <a
-                      href={song.spotifyUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
-                      title="Escuchar en Spotify"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
                   </div>
                 </div>
               ))}

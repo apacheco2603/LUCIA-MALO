@@ -253,22 +253,46 @@ export const translations = {
 };
 
 type TranslationKeys = keyof typeof translations.es;
+export type { TranslationKeys };
 
 interface LanguageContextProps {
   lang: Language;
   setLang: (lang: Language) => void;
   t: (key: TranslationKeys) => string;
+  customTexts: Record<Language, Record<string, string>>;
+  updateCustomText: (langToEdit: Language, key: TranslationKeys, value: string) => void;
+  saveAllCustomTexts: (newCustomTexts: Record<Language, Record<string, string>>) => void;
+  resetCustomTexts: () => void;
 }
 
 const LanguageContext = createContext<LanguageContextProps | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Language>("es");
+  const [customTexts, setCustomTexts] = useState<Record<Language, Record<string, string>>>({
+    es: {},
+    fr: {},
+  });
 
   useEffect(() => {
     const saved = localStorage.getItem("boda_lucia_lang") as Language;
     if (saved === "es" || saved === "fr") {
       setLangState(saved);
+    }
+
+    const savedTexts = localStorage.getItem("boda_lucia_custom_texts");
+    if (savedTexts) {
+      try {
+        const parsed = JSON.parse(savedTexts);
+        if (parsed && typeof parsed === "object") {
+          setCustomTexts({
+            es: parsed.es || {},
+            fr: parsed.fr || {},
+          });
+        }
+      } catch (e) {
+        console.error("Error loading custom texts", e);
+      }
     }
   }, []);
 
@@ -277,12 +301,52 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("boda_lucia_lang", newLang);
   };
 
+  const updateCustomText = (langToEdit: Language, key: TranslationKeys, value: string) => {
+    setCustomTexts((prev) => {
+      const updated = {
+        ...prev,
+        [langToEdit]: {
+          ...prev[langToEdit],
+          [key]: value,
+        },
+      };
+      localStorage.setItem("boda_lucia_custom_texts", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const saveAllCustomTexts = (newCustomTexts: Record<Language, Record<string, string>>) => {
+    setCustomTexts(newCustomTexts);
+    localStorage.setItem("boda_lucia_custom_texts", JSON.stringify(newCustomTexts));
+  };
+
+  const resetCustomTexts = () => {
+    const empty = { es: {}, fr: {} };
+    setCustomTexts(empty);
+    localStorage.removeItem("boda_lucia_custom_texts");
+  };
+
   const t = (key: TranslationKeys): string => {
-    return translations[lang]?.[key] || translations["es"]?.[key] || key;
+    return (
+      customTexts[lang]?.[key] ||
+      translations[lang]?.[key] ||
+      translations["es"]?.[key] ||
+      key
+    );
   };
 
   return (
-    <LanguageContext.Provider value={{ lang, setLang, t }}>
+    <LanguageContext.Provider
+      value={{
+        lang,
+        setLang,
+        t,
+        customTexts,
+        updateCustomText,
+        saveAllCustomTexts,
+        resetCustomTexts,
+      }}
+    >
       {children}
     </LanguageContext.Provider>
   );
@@ -295,3 +359,4 @@ export function useLanguage() {
   }
   return context;
 }
+

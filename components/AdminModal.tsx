@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Lock, Download, Users, Utensils, Music, ShieldCheck } from "lucide-react";
+import { X, Lock, Download, Users, Utensils, Music, ShieldCheck, Trash2 } from "lucide-react";
 
 interface RSVPRecord {
   name: string;
@@ -25,6 +25,7 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pinError, setPinError] = useState(false);
   const [rsvpList, setRsvpList] = useState<RSVPRecord[]>([]);
+  const [clearPhotoNotice, setClearPhotoNotice] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -92,6 +93,15 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
     document.body.removeChild(link);
   };
 
+  const handleClearPhotos = () => {
+    localStorage.removeItem("boda_lucia_photos");
+    setClearPhotoNotice(true);
+    setTimeout(() => {
+      setClearPhotoNotice(false);
+      window.location.reload();
+    }, 1200);
+  };
+
   const totalConfirmedAttendees = rsvpList
     .filter((r) => r.attending === "yes")
     .reduce((acc, curr) => acc + (curr.guestsCount || 1), 0);
@@ -115,7 +125,7 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
               Acceso Panel de Novios (Lucía & Malo)
             </h3>
             <p className="text-xs text-white/70 mb-6">
-              Ingresa el código PIN para consultar las confirmaciones de asistencia.
+              Ingresa el código PIN para consultar las confirmaciones y administrar el repositorio.
             </p>
 
             <form onSubmit={handleLogin} className="max-w-xs mx-auto space-y-4">
@@ -141,22 +151,39 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
           </div>
         ) : (
           <div>
-            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-white/10 pb-4 mb-6 gap-4">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-6 h-6 text-gold-400" />
                 <h3 className="font-serif text-2xl font-bold text-gold-200">
-                  Resumen de Confirmaciones
+                  Panel de Administración
                 </h3>
               </div>
 
-              <button
-                onClick={exportToCSV}
-                className="px-4 py-2 rounded-xl bg-gold-500 hover:bg-gold-600 text-white font-semibold text-xs flex items-center gap-2 shadow-md transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                <span>Exportar a Excel / CSV</span>
-              </button>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  onClick={exportToCSV}
+                  className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-gold-500 hover:bg-gold-600 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-md transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Exportar CSV</span>
+                </button>
+
+                <button
+                  onClick={handleClearPhotos}
+                  className="px-3 py-2 rounded-xl bg-rose-900/80 hover:bg-rose-800 text-rose-200 font-semibold text-xs flex items-center justify-center gap-1.5 border border-rose-500/40 transition-colors"
+                  title="Vaciar fotos del repositorio de invitados"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Limpiar Fotos</span>
+                </button>
+              </div>
             </div>
+
+            {clearPhotoNotice && (
+              <div className="bg-emerald-900/80 border border-emerald-500 text-emerald-200 text-xs p-3 rounded-xl mb-4 text-center">
+                ¡Repositorio de fotos vaciado con éxito! Recargando...
+              </div>
+            )}
 
             {/* Metrics */}
             <div className="grid grid-cols-3 gap-4 mb-6">
@@ -166,7 +193,7 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
                   {totalConfirmedAttendees}
                 </span>
                 <span className="text-[10px] uppercase text-gold-300 font-medium">
-                  Asistentes Confirmados
+                  Asistentes
                 </span>
               </div>
 

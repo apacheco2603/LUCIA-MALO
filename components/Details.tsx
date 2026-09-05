@@ -15,13 +15,14 @@ import {
   Music,
   CalendarPlus,
   Heart,
+  Train,
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function Details() {
   const { t } = useLanguage();
   const [copiedIBAN, setCopiedIBAN] = useState(false);
-  const ibanNumber = "ES91 2100 0418 4502 0005 1234";
+  const ibanNumber = "FR6220041010131282698J03457";
 
   const handleCopyIBAN = () => {
     navigator.clipboard.writeText(ibanNumber);
@@ -29,15 +30,17 @@ export default function Details() {
     setTimeout(() => setCopiedIBAN(false), 3000);
   };
 
+  const googleMapsUrl = "https://maps.app.goo.gl/j6LS7xTYFLrmKx3h9";
+
   const googleCalendarUrl =
     "https://calendar.google.com/calendar/render?action=TEMPLATE" +
     "&text=" +
     encodeURIComponent("Boda Lucía & Malo 💍") +
-    "&dates=20261003T173000Z/20261004T040000Z" +
+    "&dates=20261003T143000Z/20261004T040000Z" +
     "&details=" +
-    encodeURIComponent("¡Acompáñanos a celebrar nuestra boda! Finca La Gaivota, Madrid.") +
+    encodeURIComponent("¡Acompáñanos a celebrar nuestra boda! Municipalidad de Alfortville & Recepción.") +
     "&location=" +
-    encodeURIComponent("Finca La Gaivota, Carretera de La Coruña Km 22, 28224 Madrid, España");
+    encodeURIComponent("Municipalidad de Alfortville, Francia");
 
   const downloadICS = () => {
     const icsData =
@@ -46,9 +49,9 @@ export default function Details() {
       "PRODID:-//Boda Lucia y Malo//ES\n" +
       "BEGIN:VEVENT\n" +
       "SUMMARY:Boda Lucía & Malo 💍\n" +
-      "DESCRIPTION:¡Acompáñanos a celebrar nuestra boda! Finca La Gaivota, Madrid.\n" +
-      "LOCATION:Finca La Gaivota, Carretera de La Coruña Km 22, 28224 Madrid, España\n" +
-      "DTSTART:20261003T173000Z\n" +
+      "DESCRIPTION:¡Acompáñanos a celebrar nuestra boda! Municipalidad de Alfortville & Recepción.\n" +
+      "LOCATION:Municipalidad de Alfortville, Francia\n" +
+      "DTSTART:20261003T143000Z\n" +
       "DTEND:20261004T040000Z\n" +
       "END:VEVENT\n" +
       "END:VCALENDAR";
@@ -64,31 +67,31 @@ export default function Details() {
 
   const itinerary = [
     {
-      time: "17:30",
+      time: "14:30",
       title: t("itinerary_1_title"),
       description: t("itinerary_1_desc"),
-      icon: Sparkles,
-    },
-    {
-      time: "18:00",
-      title: t("itinerary_2_title"),
-      description: t("itinerary_2_desc"),
       icon: Clock,
     },
     {
-      time: "19:30",
-      title: t("itinerary_3_title"),
-      description: t("itinerary_3_desc"),
+      time: "15:30",
+      title: t("itinerary_2_title"),
+      description: t("itinerary_2_desc"),
       icon: Wine,
     },
     {
-      time: "21:00",
+      time: "18:00",
+      title: t("itinerary_3_title"),
+      description: t("itinerary_3_desc"),
+      icon: Sparkles,
+    },
+    {
+      time: "19:30",
       title: t("itinerary_4_title"),
       description: t("itinerary_4_desc"),
       icon: Utensils,
     },
     {
-      time: "23:30",
+      time: "21:00",
       title: t("itinerary_5_title"),
       description: t("itinerary_5_desc"),
       icon: Music,
@@ -111,7 +114,7 @@ export default function Details() {
         </p>
       </div>
 
-      {/* Featured Photo Card 2 of Lucía & Malo (Beach Walk) */}
+      {/* Featured Photo Card 2 of Lucía & Malo */}
       <div className="mb-20 max-w-4xl mx-auto rounded-3xl overflow-hidden glass-card border border-gold-500/30 p-4 sm:p-6 shadow-xl flex flex-col md:flex-row items-center gap-8">
         <div className="w-full md:w-1/2 aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 shadow-md">
           <img
@@ -177,7 +180,7 @@ export default function Details() {
               {t("cal_title")}
             </h4>
             <p className="text-xs text-gray-500">
-              {t("hero_date")} • 17:30 H
+              {t("hero_date")} • 14:30 H
             </p>
           </div>
         </div>
@@ -221,19 +224,25 @@ export default function Details() {
             </p>
 
             <div className="bg-sage-100/60 rounded-2xl p-4 text-xs text-gray-700 mb-6 space-y-2">
-              <p>🚗 <strong>Parking</strong> {t("venue_parking")}</p>
-              <p>🚌 <strong>Autobuses</strong> {t("venue_bus")}</p>
+              <div className="flex items-start gap-2">
+                <Train className="w-4 h-4 text-gold-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <strong className="block text-sage-900 font-semibold mb-0.5">Acceso / Acces:</strong>
+                  <p>{t("venue_access_muni")}</p>
+                  <p className="mt-1">{t("venue_access_recep")}</p>
+                </div>
+              </div>
             </div>
           </div>
 
           <a
-            href="https://maps.google.com/?q=Finca+La+Gaivota+Madrid"
+            href={googleMapsUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-sage-900 text-white font-medium text-xs tracking-wider uppercase hover:bg-sage-700 transition-colors shadow-md"
           >
             <span>{t("venue_maps_btn")}</span>
-            <ExternalLink className="w-4 h-4" />
+            <ExternalLink className="w-4 h-4 text-gold-400" />
           </a>
         </div>
 
@@ -246,18 +255,13 @@ export default function Details() {
             <h3 className="font-serif text-2xl font-bold text-sage-900 mb-3">
               {t("dress_title")}
             </h3>
-            <p className="text-sm font-semibold text-gold-600 mb-4">
+            <p className="text-lg font-serif font-bold text-gold-600 mb-4">
               {t("dress_subtitle")}
             </p>
 
-            <div className="space-y-4 text-xs text-gray-600 font-light">
-              <div className="p-3 bg-white/70 rounded-xl border border-gray-100">
-                {t("dress_women")}
-              </div>
-              <div className="p-3 bg-white/70 rounded-xl border border-gray-100">
-                {t("dress_men")}
-              </div>
-            </div>
+            <p className="text-xs text-gray-600 font-light leading-relaxed">
+              Un estilo elegante pero cómodo para disfrutar durante toda la celebración.
+            </p>
           </div>
 
           <div className="mt-6 text-center text-xs text-gold-700 font-medium italic">
@@ -265,7 +269,7 @@ export default function Details() {
           </div>
         </div>
 
-        {/* Gifts / Bank Account Card */}
+        {/* Gifts / Honeymoon Bank Account Card */}
         <div className="glass-card rounded-3xl p-8 border border-gold-500/30 flex flex-col justify-between">
           <div>
             <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-6">
@@ -274,15 +278,16 @@ export default function Details() {
             <h3 className="font-serif text-2xl font-bold text-sage-900 mb-3">
               {t("gift_title")}
             </h3>
-            <p className="text-xs text-gray-600 leading-relaxed mb-6 font-light">
+            
+            <p className="text-xs text-gray-600 leading-relaxed mb-6 font-light whitespace-pre-line italic bg-white/70 p-4 rounded-2xl border border-gray-100">
               {t("gift_desc")}
             </p>
 
             <div className="bg-sage-900 text-white rounded-2xl p-4 mb-4 text-center relative overflow-hidden">
-              <span className="text-[10px] uppercase text-gold-300 tracking-wider block mb-1">
+              <span className="text-[10px] uppercase text-gold-300 tracking-wider block mb-1 font-semibold">
                 {t("gift_iban_label")}
               </span>
-              <p className="font-mono text-sm tracking-wider font-semibold text-white">
+              <p className="font-mono text-xs sm:text-sm tracking-wider font-semibold text-white break-all">
                 {ibanNumber}
               </p>
             </div>

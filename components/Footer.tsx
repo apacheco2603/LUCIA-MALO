@@ -1,6 +1,10 @@
-import { Heart, Sparkles, ChevronUp } from "lucide-react";
+import { useState } from "react";
+import { Heart, Sparkles, ChevronUp, Lock } from "lucide-react";
+import AdminModal from "@/components/AdminModal";
 
 export default function Footer() {
+  const [adminModalOpen, setAdminModalOpen] = useState(false);
+
   return (
     <footer className="bg-sage-900 text-white pt-16 pb-12 px-4 border-t border-gold-500/30 relative">
       <div className="max-w-7xl mx-auto text-center">
@@ -28,9 +32,22 @@ export default function Footer() {
 
         <div className="w-full h-px bg-white/10 max-w-xl mx-auto mb-8" />
 
-        <p className="text-xs text-white/60 flex items-center justify-center gap-1">
-          Hecho con <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> para celebrar el amor eterno.
-        </p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-xs text-white/60">
+          <p className="flex items-center justify-center gap-1">
+            Hecho con <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> para celebrar el amor eterno.
+          </p>
+
+          <span className="hidden sm:inline">•</span>
+
+          {/* Admin Novios Access button */}
+          <button
+            onClick={() => setAdminModalOpen(true)}
+            className="text-gold-400 hover:text-gold-300 flex items-center gap-1 hover:underline transition-all"
+          >
+            <Lock className="w-3 h-3" />
+            <span>Panel Novios (RSVP Export)</span>
+          </button>
+        </div>
       </div>
 
       {/* Back to Top Floating Arrow */}
@@ -41,6 +58,12 @@ export default function Footer() {
       >
         <ChevronUp className="w-5 h-5" />
       </a>
+
+      {/* Admin Panel Modal */}
+      <AdminModal
+        isOpen={adminModalOpen}
+        onClose={() => setAdminModalOpen(false)}
+      />
     </footer>
   );
 }

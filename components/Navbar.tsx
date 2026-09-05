@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Music, Menu, X, Heart, Sparkles } from "lucide-react";
+import { Music, Menu, X, Heart, Sparkles, Share2 } from "lucide-react";
 
 interface NavbarProps {
   isPlayingAudio: boolean;
@@ -26,11 +26,24 @@ export default function Navbar({ isPlayingAudio, toggleAudio }: NavbarProps) {
 
   const navLinks = [
     { name: "Inicio", href: "#hero" },
+    { name: "Nuestra Historia", href: "#historia" },
     { name: "Detalles & Mapa", href: "#detalles" },
     { name: "Confirmar RSVP", href: "#rsvp" },
     { name: "Fotos", href: "#fotos" },
     { name: "Playlist Spotify", href: "#spotify" },
   ];
+
+  const handleShareWhatsApp = () => {
+    const shareText =
+      "¡Hola! Te invitamos a celebrar nuestra boda (Lucía & Malo) el 24 de Octubre de 2026. 💍\n\n" +
+      "Entra en nuestra web para ver los detalles, confirmar tu asistencia y añadir tus canciones favoritas:\n" +
+      "https://boda-lucia.app";
+
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(
+      shareText
+    )}`;
+    window.open(whatsappUrl, "_blank");
+  };
 
   return (
     <header
@@ -61,12 +74,12 @@ export default function Navbar({ isPlayingAudio, toggleAudio }: NavbarProps) {
         </a>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-8">
+        <nav className="hidden md:flex items-center space-x-6">
           {navLinks.map((link) => (
             <a
               key={link.name}
               href={link.href}
-              className={`text-sm font-medium tracking-wider uppercase transition-all duration-200 hover:text-gold-500 relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[2px] after:bg-gold-500 hover:after:w-full after:transition-all ${
+              className={`text-xs font-semibold tracking-wider uppercase transition-all duration-200 hover:text-gold-500 relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[2px] after:bg-gold-500 hover:after:w-full after:transition-all ${
                 scrolled ? "text-gray-700" : "text-white/90 drop-shadow-sm"
               }`}
             >
@@ -75,11 +88,20 @@ export default function Navbar({ isPlayingAudio, toggleAudio }: NavbarProps) {
           ))}
         </nav>
 
-        {/* Right Actions: Audio Button & Mobile Toggle */}
-        <div className="flex items-center gap-3">
+        {/* Right Actions: WhatsApp Share, Audio Button & Mobile Toggle */}
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={handleShareWhatsApp}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold tracking-wider transition-all shadow-sm"
+            title="Compartir invitación por WhatsApp"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            <span>Compartir</span>
+          </button>
+
           <button
             onClick={toggleAudio}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wider transition-all duration-300 ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold tracking-wider transition-all duration-300 ${
               isPlayingAudio
                 ? "bg-gold-500 text-white shadow-lg shadow-gold-500/30 animate-pulse"
                 : scrolled
@@ -122,6 +144,17 @@ export default function Navbar({ isPlayingAudio, toggleAudio }: NavbarProps) {
                 <Sparkles className="w-4 h-4 text-gold-400 opacity-60" />
               </a>
             ))}
+
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                handleShareWhatsApp();
+              }}
+              className="w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold text-sm tracking-wider uppercase flex items-center justify-center gap-2 mt-4"
+            >
+              <Share2 className="w-4 h-4" />
+              <span>Compartir por WhatsApp</span>
+            </button>
           </div>
         </div>
       )}

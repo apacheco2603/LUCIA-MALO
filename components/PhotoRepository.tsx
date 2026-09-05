@@ -31,33 +31,53 @@ export default function PhotoRepository() {
   const defaultPhotos: PhotoItem[] = [
     {
       id: "p1",
-      url: "/images/ceremony.jpg",
-      title: "Anillos y Ramo de Novia",
+      url: "/images/couple/photo_1.jpg",
+      title: "Aventuras en el Desierto",
       author: "Lucía & Malo",
-      category: "ceremonia",
+      category: "coctel",
       likes: 42,
       commentsCount: 5,
-      uploadedAt: "Ceremonia",
+      uploadedAt: "Recuerdos",
     },
     {
       id: "p2",
-      url: "/images/party.jpg",
-      title: "Brindis e Inicio de la Fiesta",
-      author: "Carlos Gómez",
+      url: "/images/couple/photo_2.jpg",
+      title: "Paseos Junto al Mar",
+      author: "Lucía & Malo",
       category: "fiesta",
       likes: 38,
       commentsCount: 8,
-      uploadedAt: "Fiesta",
+      uploadedAt: "Recuerdos",
     },
     {
       id: "p3",
-      url: "/images/hero.jpg",
-      title: "El Atardecer en los Jardines",
-      author: "Fotógrafo Oficial",
-      category: "coctel",
+      url: "/images/couple/photo_3.jpg",
+      title: "Risas & Complicidad",
+      author: "Lucía & Malo",
+      category: "invitados",
       likes: 56,
       commentsCount: 12,
-      uploadedAt: "Cóctel",
+      uploadedAt: "Recuerdos",
+    },
+    {
+      id: "p4",
+      url: "/images/couple/photo_4.jpg",
+      title: "Tardes de Viaje",
+      author: "Lucía & Malo",
+      category: "coctel",
+      likes: 31,
+      commentsCount: 4,
+      uploadedAt: "Recuerdos",
+    },
+    {
+      id: "p5",
+      url: "/images/couple/photo_5.jpg",
+      title: "Miradores Inolvidables",
+      author: "Lucía & Malo",
+      category: "ceremonia",
+      likes: 49,
+      commentsCount: 9,
+      uploadedAt: "Recuerdos",
     },
   ];
 
@@ -78,7 +98,8 @@ export default function PhotoRepository() {
     const saved = localStorage.getItem("boda_lucia_photos");
     if (saved) {
       try {
-        setPhotos(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        setPhotos(parsed.length > 0 ? parsed : defaultPhotos);
       } catch (e) {
         setPhotos(defaultPhotos);
       }
@@ -168,7 +189,7 @@ export default function PhotoRepository() {
             Galería Compartida de los Invitados
           </span>
           <h2 className="font-serif text-4xl sm:text-5xl font-bold text-sage-900 mb-4">
-            Repositorio de Fotos
+            Repositorio de Fotos de la Boda
           </h2>
           <p className="text-gray-600 font-light max-w-xl text-sm sm:text-base">
             ¡Queremos ver la boda desde tus ojos! Sube tus mejores fotos tomadas durante la fiesta y descarga los recuerdos del evento.
@@ -420,7 +441,7 @@ export default function PhotoRepository() {
 
                 <a
                   href={selectedPhoto.url}
-                  download={`boda-lucia-${selectedPhoto.id}.jpg`}
+                  download={`boda-lucia-malo-${selectedPhoto.id}.jpg`}
                   className="p-2.5 rounded-full bg-white/10 hover:bg-gold-500 transition-colors text-white"
                   title="Descargar Foto"
                 >

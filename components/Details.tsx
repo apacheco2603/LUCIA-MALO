@@ -13,6 +13,7 @@ import {
   Utensils,
   Wine,
   Music,
+  CalendarPlus,
 } from "lucide-react";
 
 export default function Details() {
@@ -23,6 +24,39 @@ export default function Details() {
     navigator.clipboard.writeText(ibanNumber);
     setCopiedIBAN(true);
     setTimeout(() => setCopiedIBAN(false), 3000);
+  };
+
+  const googleCalendarUrl =
+    "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+    "&text=" +
+    encodeURIComponent("Boda Lucía & Malo 💍") +
+    "&dates=20261024T173000Z/20261025T040000Z" +
+    "&details=" +
+    encodeURIComponent("¡Acompáñanos a celebrar nuestra boda! Finca La Gaivota, Madrid.") +
+    "&location=" +
+    encodeURIComponent("Finca La Gaivota, Carretera de La Coruña Km 22, 28224 Madrid, España");
+
+  const downloadICS = () => {
+    const icsData =
+      "BEGIN:VCALENDAR\n" +
+      "VERSION:2.0\n" +
+      "PRODID:-//Boda Lucia y Malo//ES\n" +
+      "BEGIN:VEVENT\n" +
+      "SUMMARY:Boda Lucía & Malo 💍\n" +
+      "DESCRIPTION:¡Acompáñanos a celebrar nuestra boda! Finca La Gaivota, Madrid.\n" +
+      "LOCATION:Finca La Gaivota, Carretera de La Coruña Km 22, 28224 Madrid, España\n" +
+      "DTSTART:20261024T173000Z\n" +
+      "DTEND:20261025T040000Z\n" +
+      "END:VEVENT\n" +
+      "END:VCALENDAR";
+
+    const blob = new Blob([icsData], { type: "text/calendar;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.setAttribute("download", "boda_lucia_y_malo.ics");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const itinerary = [
@@ -103,6 +137,42 @@ export default function Details() {
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Calendar Buttons Bar */}
+      <div className="glass-card rounded-3xl p-6 mb-16 border border-gold-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-gold-100 text-gold-700 flex items-center justify-center">
+            <CalendarPlus className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="font-serif text-lg font-bold text-sage-900">
+              Guarda el Evento en tu Calendario
+            </h4>
+            <p className="text-xs text-gray-500">
+              Sábado, 24 de Octubre de 2026 • 17:30 H
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <a
+            href={googleCalendarUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 sm:flex-initial px-5 py-3 rounded-xl bg-sage-900 hover:bg-sage-800 text-white font-semibold text-xs tracking-wider uppercase transition-colors flex items-center justify-center gap-2 shadow-sm"
+          >
+            <span>Google Calendar</span>
+            <ExternalLink className="w-4 h-4 text-gold-400" />
+          </a>
+
+          <button
+            onClick={downloadICS}
+            className="flex-1 sm:flex-initial px-5 py-3 rounded-xl bg-gold-500 hover:bg-gold-600 text-white font-semibold text-xs tracking-wider uppercase transition-colors flex items-center justify-center gap-2 shadow-sm"
+          >
+            <span>Apple / iCal</span>
+          </button>
         </div>
       </div>
 

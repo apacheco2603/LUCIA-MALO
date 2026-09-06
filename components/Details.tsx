@@ -115,24 +115,25 @@ export default function Details() {
         </p>
       </div>
 
-      {/* Featured Photo Card 2 of Lucía & Malo */}
-      <div className="mb-20 max-w-4xl mx-auto rounded-3xl overflow-hidden glass-card border border-gold-500/30 p-4 sm:p-6 shadow-xl flex flex-col md:flex-row items-center gap-8">
-        <div className="w-full md:w-1/2 aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 shadow-md">
+      {/* Featured Photo Card 2 of Lucía & Malo - Paseos Junto al Mar */}
+      <div className="mb-20 max-w-5xl mx-auto rounded-3xl overflow-hidden glass-card border border-gold-500/30 p-4 sm:p-6 shadow-2xl flex flex-col md:flex-row items-center gap-8">
+        <div className="w-full md:w-7/12 h-[380px] sm:h-[480px] md:h-[520px] rounded-2xl overflow-hidden bg-gray-100 shadow-lg relative group">
           <img
             src="/images/couple/photo_2.jpg"
-            alt="Lucía & Malo"
-            className="w-full h-full object-cover object-[center_30%]"
+            alt="Lucía & Malo - Paseos Junto al Mar"
+            className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
           />
         </div>
-        <div className="w-full md:w-1/2 text-center md:text-left space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-100 text-gold-800 text-xs font-semibold uppercase tracking-wider">
+        <div className="w-full md:w-5/12 text-center md:text-left space-y-5 p-2 sm:p-4">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gold-100 text-gold-800 text-xs font-semibold uppercase tracking-wider border border-gold-400/30 shadow-sm">
             <Heart className="w-3.5 h-3.5 fill-gold-600 text-gold-600" />
             <span>Lucía & Malo</span>
           </div>
-          <h3 className="font-serif text-3xl font-bold text-sage-900">
+          <h3 className="font-serif text-3xl sm:text-4xl font-bold text-sage-900 leading-tight">
             "Paseos Junto al Mar"
           </h3>
-          <p className="text-gray-600 font-light text-sm leading-relaxed">
+          <div className="w-16 h-0.5 bg-gold-500 rounded-full mx-auto md:mx-0" />
+          <p className="text-gray-600 font-light text-sm sm:text-base leading-relaxed">
             Cada viaje y cada paso que hemos dado juntos nos ha conducido a este momento inolvidable. ¡Estamos impacientes por celebrar con todos vosotros!
           </p>
         </div>

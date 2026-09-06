@@ -30,8 +30,8 @@ export default function Details() {
     setTimeout(() => setCopiedIBAN(false), 3000);
   };
 
-  const ceremonyMapsUrl = "https://maps.app.goo.gl/j6LS7xTYFLrmKx3h9";
-  const receptionMapsUrl = "https://www.google.com/maps/search/?api=1&query=17+Bd+du+Ch%C3%A2teau";
+  const ceremonyMapsUrl = "https://www.google.com/maps/search/?api=1&query=Mairie+d%27Alfortville%2C+Place+Fran%C3%A7ois+Mitterrand%2C+94140+Alfortville%2C+France";
+  const receptionMapsUrl = "https://maps.app.goo.gl/j6LS7xTYFLrmKx3h9";
 
   const googleCalendarUrl =
     "https://calendar.google.com/calendar/render?action=TEMPLATE" +

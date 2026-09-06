@@ -57,6 +57,16 @@ export const translations = {
     venue_access_muni: "Municipalidad de Alfortville: Metro 8 y RER D",
     venue_access_recep: "Para la recepción: RER A y RER E",
     venue_maps_btn: "Abrir Ubicación en Google Maps",
+    venue_ceremony_title: "1. Ceremonia",
+    venue_ceremony_name: "Municipalidad de Alfortville",
+    venue_ceremony_address: "Alfortville, Francia",
+    venue_ceremony_access: "Metro 8 y RER D",
+    venue_ceremony_maps_btn: "Google Maps Ceremonia",
+    venue_reception_title: "2. Recepción",
+    venue_reception_name: "Lugar de Recepción",
+    venue_reception_address: "17 Bd du Château",
+    venue_reception_access: "RER A y RER E",
+    venue_reception_maps_btn: "Google Maps Recepción",
 
     // Dress code
     dress_title: "Código de Vestimenta",
@@ -174,12 +184,22 @@ export const translations = {
     cal_btn_ical: "Apple / iCal",
 
     // Venue & Access
-    venue_title: "Où se déroule la fête ?",
+    venue_title: "Où se déroule le mariage ?",
     venue_name: "Mairie d'Alfortville & Réception",
     venue_address: "Alfortville, France",
     venue_access_muni: "Mairie d'Alfortville : Métro 8 et RER D",
     venue_access_recep: "Pour la réception : RER A et RER E",
     venue_maps_btn: "Ouvrir la Localisation sur Google Maps",
+    venue_ceremony_title: "1. Cérémonie",
+    venue_ceremony_name: "Mairie d'Alfortville",
+    venue_ceremony_address: "Alfortville, France",
+    venue_ceremony_access: "Métro 8 et RER D",
+    venue_ceremony_maps_btn: "Google Maps Cérémonie",
+    venue_reception_title: "2. Réception",
+    venue_reception_name: "Lieu de Réception",
+    venue_reception_address: "17 Bd du Château",
+    venue_reception_access: "RER A et RER E",
+    venue_reception_maps_btn: "Google Maps Réception",
 
     // Dress code
     dress_title: "Code Vestimentaire",

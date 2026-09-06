@@ -30,7 +30,8 @@ export default function Details() {
     setTimeout(() => setCopiedIBAN(false), 3000);
   };
 
-  const googleMapsUrl = "https://maps.app.goo.gl/j6LS7xTYFLrmKx3h9";
+  const ceremonyMapsUrl = "https://maps.app.goo.gl/j6LS7xTYFLrmKx3h9";
+  const receptionMapsUrl = "https://www.google.com/maps/search/?api=1&query=17+Bd+du+Ch%C3%A2teau";
 
   const googleCalendarUrl =
     "https://calendar.google.com/calendar/render?action=TEMPLATE" +
@@ -208,42 +209,71 @@ export default function Details() {
       {/* Location & Dress Code & Gifts Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Map & Venue Card */}
-        <div className="glass-card rounded-3xl p-8 border border-gold-500/30 flex flex-col justify-between">
+        <div className="glass-card rounded-3xl p-6 sm:p-8 border border-gold-500/30 flex flex-col justify-between space-y-6">
           <div>
-            <div className="w-12 h-12 rounded-2xl bg-sage-50 text-sage-600 flex items-center justify-center mb-6">
+            <div className="w-12 h-12 rounded-2xl bg-sage-50 text-sage-600 flex items-center justify-center mb-4">
               <MapPin className="w-6 h-6" />
             </div>
-            <h3 className="font-serif text-2xl font-bold text-sage-900 mb-3">
+            <h3 className="font-serif text-2xl font-bold text-sage-900 mb-4">
               {t("venue_title")}
             </h3>
-            <p className="text-sm font-semibold text-gold-600 mb-1">
-              {t("venue_name")}
-            </p>
-            <p className="text-xs text-gray-600 mb-6">
-              {t("venue_address")}
-            </p>
 
-            <div className="bg-sage-100/60 rounded-2xl p-4 text-xs text-gray-700 mb-6 space-y-2">
-              <div className="flex items-start gap-2">
-                <Train className="w-4 h-4 text-gold-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <strong className="block text-sage-900 font-semibold mb-0.5">Acceso / Acces:</strong>
-                  <p>{t("venue_access_muni")}</p>
-                  <p className="mt-1">{t("venue_access_recep")}</p>
-                </div>
+            {/* Location 1: Ceremonia */}
+            <div className="bg-white/80 rounded-2xl p-4 border border-gold-500/20 shadow-sm mb-4">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs uppercase font-bold tracking-wider text-gold-700">
+                  {t("venue_ceremony_title")}
+                </span>
+                <span className="text-[10px] bg-gold-100 text-gold-800 font-semibold px-2 py-0.5 rounded-full">
+                  14:30 H
+                </span>
               </div>
+              <p className="text-sm font-semibold text-sage-900 mb-1">
+                {t("venue_ceremony_name")}
+              </p>
+              <div className="flex items-center gap-1.5 text-xs text-gray-600 mb-3">
+                <Train className="w-3.5 h-3.5 text-gold-600 flex-shrink-0" />
+                <span>{t("venue_ceremony_access")}</span>
+              </div>
+              <a
+                href={ceremonyMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-sage-900 text-white font-medium text-[11px] tracking-wider uppercase hover:bg-sage-800 transition-colors shadow-sm"
+              >
+                <span>{t("venue_ceremony_maps_btn")}</span>
+                <ExternalLink className="w-3.5 h-3.5 text-gold-400" />
+              </a>
+            </div>
+
+            {/* Location 2: Recepción */}
+            <div className="bg-white/80 rounded-2xl p-4 border border-gold-500/20 shadow-sm">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs uppercase font-bold tracking-wider text-gold-700">
+                  {t("venue_reception_title")}
+                </span>
+                <span className="text-[10px] bg-gold-100 text-gold-800 font-semibold px-2 py-0.5 rounded-full">
+                  18:00 H
+                </span>
+              </div>
+              <p className="text-sm font-semibold text-sage-900 mb-1">
+                {t("venue_reception_address")}
+              </p>
+              <div className="flex items-center gap-1.5 text-xs text-gray-600 mb-3">
+                <Train className="w-3.5 h-3.5 text-gold-600 flex-shrink-0" />
+                <span>{t("venue_reception_access")}</span>
+              </div>
+              <a
+                href={receptionMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-gold-500 text-white font-medium text-[11px] tracking-wider uppercase hover:bg-gold-600 transition-colors shadow-sm"
+              >
+                <span>{t("venue_reception_maps_btn")}</span>
+                <ExternalLink className="w-3.5 h-3.5 text-white" />
+              </a>
             </div>
           </div>
-
-          <a
-            href={googleMapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-sage-900 text-white font-medium text-xs tracking-wider uppercase hover:bg-sage-700 transition-colors shadow-md"
-          >
-            <span>{t("venue_maps_btn")}</span>
-            <ExternalLink className="w-4 h-4 text-gold-400" />
-          </a>
         </div>
 
         {/* Dress Code Card */}

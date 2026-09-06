@@ -11,7 +11,7 @@ import AudioPlayer from "@/components/AudioPlayer";
 import Footer from "@/components/Footer";
 
 export default function Home() {
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(true);
 
   const toggleAudio = () => {
     setIsPlayingAudio((prev) => !prev);

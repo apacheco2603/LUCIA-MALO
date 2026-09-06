@@ -1,34 +1,130 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import { Music, Volume2, VolumeX, Pause, Play } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Volume2, VolumeX } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface AudioPlayerProps {
   isPlaying: boolean;
   togglePlay: () => void;
 }
 
-export default function AudioPlayer({ isPlaying, togglePlay }: AudioPlayerProps) {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+declare global {
+  interface Window {
+    YT: any;
+    onYouTubeIframeAPIReady: (() => void) | undefined;
+  }
+}
 
-  // Royalty-free acoustic wedding ambient music URL
-  const audioSrc = "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=romantic-acoustic-guitar-113589.mp3";
+export default function AudioPlayer({ isPlaying, togglePlay }: AudioPlayerProps) {
+  const { t } = useLanguage();
+  const playerRef = useRef<any>(null);
+  const [isApiReady, setIsApiReady] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
+
+  const videoId = "bpZLiq0VwR0";
 
   useEffect(() => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.play().catch(() => {
-          console.log("Autoplay blocked by browser policy until user interaction");
+    const initPlayer = () => {
+      if (window.YT && window.YT.Player) {
+        playerRef.current = new window.YT.Player("youtube-audio-player", {
+          height: "0",
+          width: "0",
+          videoId: videoId,
+          playerVars: {
+            autoplay: 1,
+            loop: 1,
+            playlist: videoId,
+            controls: 0,
+            showinfo: 0,
+            autohide: 1,
+            modestbranding: 1,
+            playsinline: 1,
+            enablejsapi: 1,
+          },
+          events: {
+            onReady: (event: any) => {
+              setIsApiReady(true);
+              // Set volume to medium-low (30%)
+              event.target.setVolume(30);
+              if (isPlaying) {
+                event.target.playVideo();
+              }
+            },
+            onStateChange: (event: any) => {
+              // If video ends, loop continuously
+              if (event.data === window.YT?.PlayerState?.ENDED) {
+                event.target.playVideo();
+              }
+            },
+          },
         });
+      }
+    };
+
+    if (!window.YT) {
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName("script")[0];
+      firstScriptTag?.parentNode?.insertBefore(tag, firstScriptTag);
+
+      window.onYouTubeIframeAPIReady = () => {
+        initPlayer();
+      };
+    } else {
+      initPlayer();
+    }
+
+    return () => {
+      if (playerRef.current && typeof playerRef.current.destroy === "function") {
+        playerRef.current.destroy();
+      }
+    };
+  }, []);
+
+  // Handle play / pause / volume when isPlaying prop changes
+  useEffect(() => {
+    if (playerRef.current && typeof playerRef.current.playVideo === "function") {
+      if (isPlaying) {
+        playerRef.current.setVolume(30);
+        playerRef.current.playVideo();
       } else {
-        audioRef.current.pause();
+        playerRef.current.pauseVideo();
       }
     }
-  }, [isPlaying]);
+  }, [isPlaying, isApiReady]);
+
+  // First user interaction auto-start audio if browser blocked initial autoplay
+  useEffect(() => {
+    const handleFirstUserInteraction = () => {
+      if (!hasInteracted) {
+        setHasInteracted(true);
+        if (playerRef.current && typeof playerRef.current.playVideo === "function") {
+          playerRef.current.setVolume(30);
+          if (isPlaying) {
+            playerRef.current.playVideo();
+          }
+        }
+      }
+    };
+
+    window.addEventListener("click", handleFirstUserInteraction, { once: true });
+    window.addEventListener("touchstart", handleFirstUserInteraction, { once: true });
+    window.addEventListener("scroll", handleFirstUserInteraction, { once: true });
+
+    return () => {
+      window.removeEventListener("click", handleFirstUserInteraction);
+      window.removeEventListener("touchstart", handleFirstUserInteraction);
+      window.removeEventListener("scroll", handleFirstUserInteraction);
+    };
+  }, [hasInteracted, isPlaying]);
 
   return (
     <div className="fixed bottom-6 right-6 z-40">
-      <audio ref={audioRef} src={audioSrc} loop preload="auto" />
+      {/* Hidden YouTube iframe container */}
+      <div className="hidden" aria-hidden="true">
+        <div id="youtube-audio-player" />
+      </div>
 
       <button
         onClick={togglePlay}
@@ -41,7 +137,7 @@ export default function AudioPlayer({ isPlaying, togglePlay }: AudioPlayerProps)
       >
         <div className="relative">
           {isPlaying ? (
-            <Volume2 className="w-5 h-5 animate-spin" />
+            <Volume2 className="w-5 h-5" />
           ) : (
             <VolumeX className="w-5 h-5 opacity-70" />
           )}

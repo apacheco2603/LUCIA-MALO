@@ -235,7 +235,7 @@ export default function SpotifyRepository() {
             </form>
           </div>
 
-          {/* Spotify Direct Playlist Widget with Photo 4 (Fountain Selfie) */}
+          {/* Spotify Direct Playlist Widget with Official Spotify Embed */}
           <div className="glass-panel-dark text-white rounded-3xl p-6 border border-emerald-500/30">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -243,40 +243,34 @@ export default function SpotifyRepository() {
                   <Music className="w-5 h-5 fill-black" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-sm">Playlist Oficial Boda</h4>
-                  <p className="text-[11px] text-emerald-300">Lucía & Malo 2026</p>
+                  <h4 className="font-semibold text-sm">{t("spotify_playlist_title")}</h4>
+                  <p className="text-[11px] text-emerald-300">{t("spotify_playlist_subtitle")}</p>
                 </div>
               </div>
 
               <a
-                href="https://open.spotify.com"
+                href="https://open.spotify.com/playlist/7pAXtZlSeZzXsVP2OB0BVL?si=3d81956100d44109&pt=2477f1b862cd9b595ef38e6860eae772"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-3 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-colors"
+                className="px-3.5 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-colors shadow-md"
               >
                 <span>{t("spotify_open_app")}</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
 
-            {/* Embedded Cover Card with Photo 4 */}
-            <div className="bg-black/60 rounded-2xl p-4 border border-white/10 flex items-center gap-4">
-              <img
-                src="/images/couple/photo_4.jpg"
-                alt="Lucía & Malo Spotify Cover"
-                className="w-20 h-20 rounded-xl object-cover object-[center_20%] shadow-md"
+            {/* Embedded Spotify Player Iframe */}
+            <div className="rounded-2xl overflow-hidden border border-white/10 shadow-lg">
+              <iframe
+                style={{ borderRadius: "16px" }}
+                src="https://open.spotify.com/embed/playlist/7pAXtZlSeZzXsVP2OB0BVL?utm_source=generator&theme=0"
+                width="100%"
+                height="352"
+                frameBorder="0"
+                allowFullScreen={false}
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
               />
-              <div className="flex-1 overflow-hidden">
-                <p className="text-xs font-semibold text-white truncate">
-                  Boda Lucía & Malo (La Lista Definitiva)
-                </p>
-                <p className="text-[11px] text-gray-400 mt-0.5">
-                  {songs.length + 15} canciones • 2h 45m
-                </p>
-                <div className="w-full bg-white/20 h-1.5 rounded-full mt-2 overflow-hidden">
-                  <div className="bg-emerald-500 h-full w-2/3 rounded-full animate-pulse" />
-                </div>
-              </div>
             </div>
           </div>
         </div>

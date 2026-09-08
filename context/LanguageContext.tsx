@@ -132,10 +132,22 @@ export const translations = {
     spotify_voted_by: "Ordenadas por Votos",
     spotify_open_app: "Abrir App",
 
+    // Details Extra
+    details_beach_title: "Paseos Junto al Mar",
+    details_beach_desc: "Cada viaje y cada paso que hemos dado juntos nos ha conducido a este momento inolvidable. ¡Estamos impacientes por celebrar con todos vosotros!",
+    dress_desc: "Un estilo elegante pero cómodo para disfrutar durante toda la celebración.",
+
+    // Spotify Extra
+    spotify_playlist_title: "Playlist Oficial Boda",
+    spotify_playlist_subtitle: "Lucía & Malo 2026",
+
     // Footer & Admin
+    footer_see_you: "¡Nos vemos en Alfortville!",
+    footer_thanks_quote: `"¡Gracias por formar parte de nuestra historia!"`,
+    footer_date_location: "3 de Octubre de 2026 • Alfortville, Francia",
     footer_hashtag: "#BodaLuciaYMalo2026",
     footer_made_with: "Hecho con amor para celebrar el amor eterno.",
-    footer_admin_btn: "Panel Novios (RSVP Export)",
+    footer_admin_btn: "Panel Novios (RSVP & Textos)",
   },
 
   fr: {
@@ -265,10 +277,22 @@ export const translations = {
     spotify_voted_by: "Triées par Votes",
     spotify_open_app: "Ouvrir l'App",
 
+    // Details Extra
+    details_beach_title: "Promenades en Bord de Mer",
+    details_beach_desc: "Chaque voyage et chaque pas que nous avons faits ensemble nous ont conduits à ce moment inoubliable. Nous avons hâte de célébrer avec vous tous !",
+    dress_desc: "Un style élégant mais confortable pour profiter de toute la célébration.",
+
+    // Spotify Extra
+    spotify_playlist_title: "Playlist Officielle Mariage",
+    spotify_playlist_subtitle: "Lucía & Malo 2026",
+
     // Footer & Admin
+    footer_see_you: "Rendez-vous à Alfortville !",
+    footer_thanks_quote: `"Merci de faire partie de notre histoire !"`,
+    footer_date_location: "3 Octobre 2026 • Alfortville, France",
     footer_hashtag: "#MariageLuciaEtMalo2026",
     footer_made_with: "Fait avec amour pour célébrer l'amour éternel.",
-    footer_admin_btn: "Espace Mariés (Export RSVP)",
+    footer_admin_btn: "Espace Mariés (RSVP & Textes)",
   },
 };
 

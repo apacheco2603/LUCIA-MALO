@@ -23,13 +23,13 @@ export default function Footer() {
         <div className="text-center sm:text-left space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/20 text-gold-300 text-xs font-semibold uppercase tracking-wider border border-gold-500/30">
             <Heart className="w-3.5 h-3.5 fill-gold-400 text-gold-400" />
-            <span>¡Nos vemos en Madrid!</span>
+            <span>{t("footer_see_you")}</span>
           </div>
           <h4 className="font-serif text-2xl sm:text-3xl font-bold text-white">
-            "¡Gracias por formar parte de nuestra historia!"
+            {t("footer_thanks_quote")}
           </h4>
           <p className="text-xs text-gold-200/80 font-light">
-            Lucía & Malo • 3 de Octubre de 2026
+            Lucía & Malo • {t("hero_date")}
           </p>
         </div>
       </div>
@@ -47,7 +47,7 @@ export default function Footer() {
         </h3>
 
         <p className="text-xs uppercase tracking-widest text-gold-400 font-semibold mb-6">
-          3 de Octubre de 2026 • Madrid
+          {t("footer_date_location")}
         </p>
 
         {/* Wedding Hashtag */}

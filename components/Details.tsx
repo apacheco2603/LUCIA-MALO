@@ -130,11 +130,11 @@ export default function Details() {
             <span>Lucía & Malo</span>
           </div>
           <h3 className="font-serif text-3xl sm:text-4xl font-bold text-sage-900 leading-tight">
-            "Paseos Junto al Mar"
+            "{t("details_beach_title")}"
           </h3>
           <div className="w-16 h-0.5 bg-gold-500 rounded-full mx-auto md:mx-0" />
           <p className="text-gray-600 font-light text-sm sm:text-base leading-relaxed">
-            Cada viaje y cada paso que hemos dado juntos nos ha conducido a este momento inolvidable. ¡Estamos impacientes por celebrar con todos vosotros!
+            {t("details_beach_desc")}
           </p>
         </div>
       </div>
@@ -291,7 +291,7 @@ export default function Details() {
             </p>
 
             <p className="text-xs text-gray-600 font-light leading-relaxed">
-              Un estilo elegante pero cómodo para disfrutar durante toda la celebración.
+              {t("dress_desc")}
             </p>
           </div>
 

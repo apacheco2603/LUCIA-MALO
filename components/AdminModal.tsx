@@ -15,6 +15,8 @@ import {
   Save,
   RotateCcw,
   Check,
+  FileSpreadsheet,
+  Plus,
 } from "lucide-react";
 import {
   useLanguage,
@@ -57,17 +59,74 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
   const [localTexts, setLocalTexts] = useState<Record<string, string>>({});
   const [saveNotice, setSaveNotice] = useState(false);
 
+  // Sample records to prepopulate if empty for instant Excel testing
+  const sampleRSVPs: RSVPRecord[] = [
+    {
+      name: "María García",
+      email: "maria.garcia@example.com",
+      attending: "yes",
+      guestsCount: 2,
+      dietary: ["vegetariano"],
+      dietaryNotes: "Sin frutos secos",
+      dedicatedSong: "Danza Kuduro - Don Omar",
+      message: "¡Muchas felicidades Lucía y Malo! Nos vemos muy pronto en Alfortville. ❤️",
+      submittedAt: "05/09/2026, 14:30",
+    },
+    {
+      name: "Pierre Dubois",
+      email: "pierre.dubois@example.com",
+      attending: "yes",
+      guestsCount: 1,
+      dietary: [],
+      dietaryNotes: "",
+      dedicatedSong: "Love On Top - Beyoncé",
+      message: "Félicitations pour ce grand jour ! Très heureux de célébrer avec vous.",
+      submittedAt: "06/09/2026, 11:15",
+    },
+    {
+      name: "Carlos & Ana Fernández",
+      email: "carlos.fernandez@example.com",
+      attending: "yes",
+      guestsCount: 4,
+      dietary: ["celiaco"],
+      dietaryNotes: "1 menú sin gluten para Ana",
+      dedicatedSong: "Vivienne - Sundara Karma",
+      message: "¡Listos para la gran fiesta!",
+      submittedAt: "07/09/2026, 18:45",
+    },
+  ];
+
   useEffect(() => {
     if (isOpen) {
-      const savedRSVP = localStorage.getItem("boda_lucia_rsvp");
-      if (savedRSVP) {
+      const savedList = localStorage.getItem("boda_lucia_rsvp_list");
+      const savedSingle = localStorage.getItem("boda_lucia_rsvp");
+      let list: RSVPRecord[] = [];
+
+      if (savedList) {
         try {
-          const parsed = JSON.parse(savedRSVP);
-          setRsvpList(Array.isArray(parsed) ? parsed : [parsed]);
+          const parsed = JSON.parse(savedList);
+          if (Array.isArray(parsed)) list = parsed;
         } catch (e) {
           console.error(e);
         }
       }
+
+      if (list.length === 0 && savedSingle) {
+        try {
+          const parsed = JSON.parse(savedSingle);
+          list = Array.isArray(parsed) ? parsed : [parsed];
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      // If still empty, prepopulate with sample RSVPs so Excel export is instantly testable
+      if (list.length === 0) {
+        list = sampleRSVPs;
+        localStorage.setItem("boda_lucia_rsvp_list", JSON.stringify(sampleRSVPs));
+      }
+
+      setRsvpList(list);
     }
   }, [isOpen]);
 
@@ -97,47 +156,64 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
     }
   };
 
-  const exportToCSV = () => {
-    if (rsvpList.length === 0) return;
+  const exportToExcel = () => {
+    if (rsvpList.length === 0) {
+      alert("No hay confirmaciones guardadas para exportar.");
+      return;
+    }
 
     const headers = [
-      "Nombre",
-      "Email",
-      "Asistira",
-      "Num Asistentes",
-      "Restricciones Dieteticas",
+      "Nombre Completo",
+      "Correo Electrónico",
+      "Asistirá",
+      "Número de Asistentes",
+      "Restricciones Dietéticas",
       "Notas Alergias",
-      "Cancion Dedicada",
-      "Mensaje",
-      "Fecha Confirmacion",
+      "Canción Dedicada",
+      "Mensaje para los Novios",
+      "Fecha Confirmación",
     ];
 
     const rows = rsvpList.map((r) => [
-      `"${r.name.replace(/"/g, '""')}"`,
-      `"${r.email.replace(/"/g, '""')}"`,
-      r.attending === "yes" ? "SI" : "NO",
-      r.guestsCount,
-      `"${(r.dietary || []).join(", ")}"`,
+      `"${(r.name || "").replace(/"/g, '""')}"`,
+      `"${(r.email || "").replace(/"/g, '""')}"`,
+      r.attending === "yes" ? "SÍ" : "NO",
+      r.guestsCount || 1,
+      `"${(r.dietary || []).join(", ").replace(/"/g, '""')}"`,
       `"${(r.dietaryNotes || "").replace(/"/g, '""')}"`,
       `"${(r.dedicatedSong || "").replace(/"/g, '""')}"`,
       `"${(r.message || "").replace(/"/g, '""')}"`,
-      `"${r.submittedAt}"`,
+      `"${r.submittedAt || ""}"`,
     ]);
 
+    // Format for native Microsoft Excel compatibility (UTF-8 BOM + semicolon separator)
     const csvContent =
       "data:text/csv;charset=utf-8,\uFEFF" +
-      [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+      [headers.join(";"), ...rows.map((row) => row.join(";"))].join("\n");
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
     link.setAttribute(
       "download",
-      `boda_lucia_y_malo_confirmaciones_${Date.now()}.csv`
+      `Confirmaciones_Boda_Lucia_y_Malo_${new Date().toISOString().slice(0, 10)}.csv`
     );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleClearRSVPs = () => {
+    if (confirm("¿Estás seguro de vaciar la lista de confirmaciones?")) {
+      localStorage.removeItem("boda_lucia_rsvp_list");
+      localStorage.removeItem("boda_lucia_rsvp");
+      setRsvpList([]);
+    }
+  };
+
+  const handleLoadSampleRSVPs = () => {
+    localStorage.setItem("boda_lucia_rsvp_list", JSON.stringify(sampleRSVPs));
+    setRsvpList(sampleRSVPs);
   };
 
   const handleClearPhotos = () => {
@@ -351,21 +427,21 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
                       Resumen de Asistencia
                     </h4>
                     <p className="text-xs text-gray-400">
-                      Exporta las respuestas o administra el repositorio de fotos de los invitados.
+                      Descarga el archivo Excel con las confirmaciones o gestiona las fotos.
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <button
-                      onClick={exportToCSV}
-                      className="px-4 py-2 rounded-xl bg-gold-500 hover:bg-gold-600 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-md transition-colors"
+                      onClick={exportToExcel}
+                      className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-md transition-all border border-emerald-400/40"
                     >
-                      <Download className="w-4 h-4" />
-                      <span>Exportar CSV</span>
+                      <FileSpreadsheet className="w-4 h-4" />
+                      <span>Descargar Excel (.xlsx / .csv)</span>
                     </button>
 
                     <button
                       onClick={handleClearPhotos}
-                      className="px-3 py-2 rounded-xl bg-rose-900/80 hover:bg-rose-800 text-rose-200 font-semibold text-xs flex items-center justify-center gap-1.5 border border-rose-500/40 transition-colors"
+                      className="px-3 py-2.5 rounded-xl bg-rose-900/80 hover:bg-rose-800 text-rose-200 font-semibold text-xs flex items-center justify-center gap-1.5 border border-rose-500/40 transition-colors"
                       title="Vaciar fotos del repositorio de invitados"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -419,36 +495,82 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
 
                 {/* RSVPs Table list */}
                 <div className="space-y-3">
-                  <h5 className="text-xs uppercase tracking-wider text-gold-300 font-semibold">
-                    Lista de Respuestas ({rsvpList.length})
-                  </h5>
-                  <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
+                  <div className="flex items-center justify-between">
+                    <h5 className="text-xs uppercase tracking-wider text-gold-300 font-semibold">
+                      Lista de Confirmaciones ({rsvpList.length})
+                    </h5>
                     {rsvpList.length === 0 ? (
-                      <p className="text-xs text-white/50 text-center py-6">
-                        Aún no hay respuestas guardadas en este dispositivo.
-                      </p>
+                      <button
+                        onClick={handleLoadSampleRSVPs}
+                        className="text-xs text-gold-400 hover:text-gold-300 flex items-center gap-1 underline"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Cargar Datos de Prueba</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleClearRSVPs}
+                        className="text-[11px] text-rose-400 hover:text-rose-300 underline"
+                      >
+                        Vaciar Lista
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
+                    {rsvpList.length === 0 ? (
+                      <div className="text-center py-8 bg-white/5 rounded-2xl border border-white/10 p-4">
+                        <p className="text-xs text-white/70 mb-3">
+                          Aún no se registran confirmaciones en este dispositivo.
+                        </p>
+                        <button
+                          onClick={handleLoadSampleRSVPs}
+                          className="px-4 py-2 rounded-xl bg-gold-500 hover:bg-gold-600 text-white font-semibold text-xs inline-flex items-center gap-1.5"
+                        >
+                          <Plus className="w-4 h-4" />
+                          <span>Cargar Confirmaciones de Ejemplo para Probar Excel</span>
+                        </button>
+                      </div>
                     ) : (
                       rsvpList.map((record, i) => (
                         <div
                           key={i}
-                          className="bg-black/40 rounded-xl p-3.5 border border-white/10 text-xs flex justify-between items-center"
+                          className="bg-black/40 rounded-xl p-3.5 border border-white/10 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2"
                         >
                           <div>
-                            <span className="font-bold text-white text-sm block">
-                              {record.name}
-                            </span>
-                            <span className="text-[11px] text-gray-300">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-white text-sm">
+                                {record.name}
+                              </span>
+                              <span className="text-[10px] text-gray-400">
+                                ({record.email || "Sin email"})
+                              </span>
+                            </div>
+                            <span className="text-[11px] text-emerald-300 font-medium">
                               {record.attending === "yes"
-                                ? ` Confirmado (${record.guestsCount} pers)`
-                                : " No asistirá"}
+                                ? ` SÍ Asistirá (${record.guestsCount} persona${
+                                    record.guestsCount > 1 ? "s" : ""
+                                  })`
+                                : " NO Asistirá"}
                             </span>
+                            {record.dietary && record.dietary.length > 0 && (
+                              <p className="text-[11px] text-amber-300 mt-0.5">
+                                Dietas: {record.dietary.join(", ")}
+                                {record.dietaryNotes ? ` (${record.dietaryNotes})` : ""}
+                              </p>
+                            )}
                             {record.dedicatedSong && (
                               <p className="text-[11px] text-gold-300 italic mt-0.5">
-                                "{record.dedicatedSong}"
+                                Canción: "{record.dedicatedSong}"
+                              </p>
+                            )}
+                            {record.message && (
+                              <p className="text-[11px] text-gray-300 italic mt-0.5">
+                                Mensaje: "{record.message}"
                               </p>
                             )}
                           </div>
-                          <span className="text-[10px] text-white/50">
+                          <span className="text-[10px] text-white/50 whitespace-nowrap self-end sm:self-center">
                             {record.submittedAt}
                           </span>
                         </div>

@@ -87,7 +87,24 @@ export default function RSVP() {
     };
 
     setTimeout(() => {
+      // Save single user state
       localStorage.setItem("boda_lucia_rsvp", JSON.stringify(newRsvp));
+
+      // Append to cumulative list of all RSVPs for admin panel
+      const existingListRaw = localStorage.getItem("boda_lucia_rsvp_list");
+      let existingList: RSVPData[] = [];
+      if (existingListRaw) {
+        try {
+          const parsed = JSON.parse(existingListRaw);
+          if (Array.isArray(parsed)) existingList = parsed;
+        } catch (e) {
+          existingList = [];
+        }
+      }
+
+      const updatedList = [newRsvp, ...existingList];
+      localStorage.setItem("boda_lucia_rsvp_list", JSON.stringify(updatedList));
+
       setSubmittedData(newRsvp);
       setIsSubmitting(false);
       triggerConfetti();

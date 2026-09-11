@@ -3,18 +3,7 @@
 import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { Camera, Upload, Heart, Download, Maximize2, X, Image as ImageIcon } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
-
-interface PhotoItem {
-  id: string;
-  url: string;
-  title: string;
-  author: string;
-  category: "ceremonia" | "fiesta" | "coctel" | "invitados";
-  likes: number;
-  commentsCount: number;
-  uploadedAt: string;
-  isUserUploaded?: boolean;
-}
+import { subscribePhotosCloud, savePhotoCloud, PhotoItem } from "@/lib/photoService";
 
 export default function PhotoRepository() {
   const { t } = useLanguage();
@@ -25,6 +14,7 @@ export default function PhotoRepository() {
   const [selectedPhoto, setSelectedPhoto] = useState<PhotoItem | null>(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [likedPhotos, setLikedPhotos] = useState<Record<string, boolean>>({});
+  const [isUploading, setIsUploading] = useState(false);
 
   const [newTitle, setNewTitle] = useState("");
   const [newAuthor, setNewAuthor] = useState("");
@@ -32,17 +22,13 @@ export default function PhotoRepository() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem("boda_lucia_photos");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setPhotos(parsed);
-      } catch (e) {
-        setPhotos([]);
-      }
-    } else {
-      setPhotos([]);
-    }
+    const unsubscribe = subscribePhotosCloud((updatedPhotos) => {
+      setPhotos(updatedPhotos);
+    });
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   const savePhotos = (updated: PhotoItem[]) => {
@@ -61,12 +47,13 @@ export default function PhotoRepository() {
     }
   };
 
-  const handleAddPhotoSubmit = (e: FormEvent) => {
+  const handleAddPhotoSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!imagePreview) return;
 
-    const newPhoto: PhotoItem = {
-      id: "p_" + Date.now(),
+    setIsUploading(true);
+
+    const newPhotoPayload: Omit<PhotoItem, "id"> = {
       url: imagePreview,
       title: newTitle.trim() || "Recuerdo de la Boda",
       author: newAuthor.trim() || "Invitado",
@@ -77,9 +64,9 @@ export default function PhotoRepository() {
       isUserUploaded: true,
     };
 
-    const updated = [newPhoto, ...photos];
-    savePhotos(updated);
+    await savePhotoCloud(newPhotoPayload);
 
+    setIsUploading(false);
     setNewTitle("");
     setNewAuthor("");
     setImagePreview(null);

@@ -26,6 +26,7 @@ import {
 } from "@/context/LanguageContext";
 
 import { subscribeRSVPs } from "@/lib/rsvpService";
+import { clearAllPhotosCloud } from "@/lib/photoService";
 
 interface RSVPRecord {
   name: string;
@@ -201,13 +202,15 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
     setRsvpList(sampleRSVPs);
   };
 
-  const handleClearPhotos = () => {
-    localStorage.removeItem("boda_lucia_photos");
-    setClearPhotoNotice(true);
-    setTimeout(() => {
-      setClearPhotoNotice(false);
-      window.location.reload();
-    }, 1200);
+  const handleClearPhotos = async () => {
+    if (confirm("¿Estás seguro de vaciar el repositorio de fotos de los invitados en la nube?")) {
+      await clearAllPhotosCloud();
+      setClearPhotoNotice(true);
+      setTimeout(() => {
+        setClearPhotoNotice(false);
+        window.location.reload();
+      }, 1200);
+    }
   };
 
   const handleTextChange = (key: string, val: string) => {

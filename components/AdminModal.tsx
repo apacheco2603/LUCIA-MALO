@@ -25,6 +25,8 @@ import {
   translations,
 } from "@/context/LanguageContext";
 
+import { subscribeRSVPs } from "@/lib/rsvpService";
+
 interface RSVPRecord {
   name: string;
   email: string;
@@ -98,35 +100,18 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
 
   useEffect(() => {
     if (isOpen) {
-      const savedList = localStorage.getItem("boda_lucia_rsvp_list");
-      const savedSingle = localStorage.getItem("boda_lucia_rsvp");
-      let list: RSVPRecord[] = [];
-
-      if (savedList) {
-        try {
-          const parsed = JSON.parse(savedList);
-          if (Array.isArray(parsed)) list = parsed;
-        } catch (e) {
-          console.error(e);
+      const unsubscribe = subscribeRSVPs((records) => {
+        if (records.length === 0) {
+          setRsvpList(sampleRSVPs);
+          localStorage.setItem("boda_lucia_rsvp_list", JSON.stringify(sampleRSVPs));
+        } else {
+          setRsvpList(records);
         }
-      }
+      });
 
-      if (list.length === 0 && savedSingle) {
-        try {
-          const parsed = JSON.parse(savedSingle);
-          list = Array.isArray(parsed) ? parsed : [parsed];
-        } catch (e) {
-          console.error(e);
-        }
-      }
-
-      // If still empty, prepopulate with sample RSVPs so Excel export is instantly testable
-      if (list.length === 0) {
-        list = sampleRSVPs;
-        localStorage.setItem("boda_lucia_rsvp_list", JSON.stringify(sampleRSVPs));
-      }
-
-      setRsvpList(list);
+      return () => {
+        if (unsubscribe) unsubscribe();
+      };
     }
   }, [isOpen]);
 

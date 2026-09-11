@@ -4,6 +4,7 @@ import { useState, useEffect, FormEvent } from "react";
 import confetti from "canvas-confetti";
 import { CheckCircle2, Heart, Send, Users, AlertCircle } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { saveRSVP, RSVPRecord } from "@/lib/rsvpService";
 
 interface RSVPData {
   name: string;
@@ -64,7 +65,7 @@ export default function RSVP() {
     }
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
 
@@ -86,29 +87,10 @@ export default function RSVP() {
       }),
     };
 
-    setTimeout(() => {
-      // Save single user state
-      localStorage.setItem("boda_lucia_rsvp", JSON.stringify(newRsvp));
-
-      // Append to cumulative list of all RSVPs for admin panel
-      const existingListRaw = localStorage.getItem("boda_lucia_rsvp_list");
-      let existingList: RSVPData[] = [];
-      if (existingListRaw) {
-        try {
-          const parsed = JSON.parse(existingListRaw);
-          if (Array.isArray(parsed)) existingList = parsed;
-        } catch (e) {
-          existingList = [];
-        }
-      }
-
-      const updatedList = [newRsvp, ...existingList];
-      localStorage.setItem("boda_lucia_rsvp_list", JSON.stringify(updatedList));
-
-      setSubmittedData(newRsvp);
-      setIsSubmitting(false);
-      triggerConfetti();
-    }, 600);
+    await saveRSVP(newRsvp);
+    setSubmittedData(newRsvp);
+    setIsSubmitting(false);
+    triggerConfetti();
   };
 
   const handleResetRSVP = () => {

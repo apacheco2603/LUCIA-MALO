@@ -88,14 +88,24 @@ function mergeRSVPs(listA: any[], listB: any[]): any[] {
   const mergedMap = new Map();
   [...listA, ...listB].forEach((item) => {
     if (!item || !item.name || isTestRecord(item)) return;
-    const key =
-      item.id || `${item.name.trim().toLowerCase()}_${item.email ? item.email.trim().toLowerCase() : ""}_${item.submittedAt || ""}`;
-    if (!mergedMap.has(key)) {
+    const nameKey = String(item.name).trim().toLowerCase();
+    const emailKey = item.email ? String(item.email).trim().toLowerCase() : "";
+    const key = `${nameKey}_${emailKey}`;
+
+    const existing = mergedMap.get(key);
+    if (!existing) {
       mergedMap.set(key, item);
+    } else {
+      mergedMap.set(key, {
+        ...existing,
+        ...item,
+        id: item.id || existing.id,
+      });
     }
   });
   return Array.from(mergedMap.values());
 }
+
 
 
 const corsHeaders = {

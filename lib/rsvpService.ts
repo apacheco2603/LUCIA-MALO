@@ -25,11 +25,16 @@ export interface RSVPRecord {
 const COLLECTION_NAME = "rsvps";
 
 export async function saveRSVP(rsvpData: Omit<RSVPRecord, "id">): Promise<void> {
+  const recordWithId: RSVPRecord = {
+    ...rsvpData,
+    id: (rsvpData as any).id || "rsvp_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+  };
+
   // 1. Immediately save locally to LocalStorage (boda_lucia_rsvp and boda_lucia_rsvp_list)
   try {
-    localStorage.setItem("boda_lucia_rsvp", JSON.stringify(rsvpData));
+    localStorage.setItem("boda_lucia_rsvp", JSON.stringify(recordWithId));
     const currentLocal = getLocalRSVPs();
-    const updatedLocal = mergeRSVPArrays([rsvpData as RSVPRecord], currentLocal);
+    const updatedLocal = mergeRSVPArrays([recordWithId], currentLocal);
     localStorage.setItem("boda_lucia_rsvp_list", JSON.stringify(updatedLocal));
   } catch (e) {
     console.warn("LocalStorage save error", e);
@@ -40,7 +45,7 @@ export async function saveRSVP(rsvpData: Omit<RSVPRecord, "id">): Promise<void> 
     const res = await fetch("/api/rsvp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(rsvpData),
+      body: JSON.stringify(recordWithId),
     });
     if (res.ok) {
       const body = await res.json();
@@ -57,7 +62,7 @@ export async function saveRSVP(rsvpData: Omit<RSVPRecord, "id">): Promise<void> 
   try {
     const colRef = collection(db, COLLECTION_NAME);
     await addDoc(colRef, {
-      ...rsvpData,
+      ...recordWithId,
       createdAt: serverTimestamp(),
     });
   } catch (err) {
@@ -80,14 +85,24 @@ function mergeRSVPArrays(listA: RSVPRecord[], listB: RSVPRecord[]): RSVPRecord[]
   const mergedMap = new Map<string, RSVPRecord>();
   [...listA, ...listB].forEach((item) => {
     if (!item || !item.name || isTestRecord(item)) return;
-    const key =
-      item.id || `${item.name.trim().toLowerCase()}_${item.email ? item.email.trim().toLowerCase() : ""}_${item.submittedAt || ""}`;
-    if (!mergedMap.has(key)) {
+    const nameKey = item.name.trim().toLowerCase();
+    const emailKey = item.email ? item.email.trim().toLowerCase() : "";
+    const key = `${nameKey}_${emailKey}`;
+
+    const existing = mergedMap.get(key);
+    if (!existing) {
       mergedMap.set(key, item);
+    } else {
+      mergedMap.set(key, {
+        ...existing,
+        ...item,
+        id: item.id || existing.id,
+      });
     }
   });
   return Array.from(mergedMap.values());
 }
+
 
 export function subscribeRSVPs(callback: (records: RSVPRecord[]) => void) {
   let isSubscribed = true;

@@ -26,7 +26,6 @@ export interface PhotoItem {
 
 const COLLECTION_NAME = "photos";
 
-// Helper to compress base64 image before cloud upload so it uploads instantly
 export function compressImage(dataUrl: string, maxWidth = 1024, quality = 0.75): Promise<string> {
   return new Promise((resolve) => {
     const img = new Image();
@@ -69,7 +68,18 @@ export async function savePhotoCloud(photoData: Omit<PhotoItem, "id">): Promise<
     createdAt: serverTimestamp(),
   };
 
-  // 1. Save locally as instant local fallback
+  // 1. Post to Server API Endpoint (/api/photos)
+  try {
+    await fetch("/api/photos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch (e) {
+    console.warn("Server API photo save warning", e);
+  }
+
+  // 2. Save locally as fallback
   try {
     const savedRaw = localStorage.getItem("boda_lucia_photos");
     let existingList: PhotoItem[] = [];
@@ -90,7 +100,7 @@ export async function savePhotoCloud(photoData: Omit<PhotoItem, "id">): Promise<
     console.warn("LocalStorage photo save warning", e);
   }
 
-  // 2. Upload to Cloud Firestore for global cloud availability
+  // 3. Upload to Cloud Firestore
   try {
     const colRef = collection(db, COLLECTION_NAME);
     await addDoc(colRef, payload);
@@ -100,11 +110,33 @@ export async function savePhotoCloud(photoData: Omit<PhotoItem, "id">): Promise<
 }
 
 export function subscribePhotosCloud(callback: (records: PhotoItem[]) => void) {
+  let isSubscribed = true;
+
+  const fetchGlobalAPI = async () => {
+    try {
+      const res = await fetch("/api/photos", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data.photos) && data.photos.length > 0) {
+          if (isSubscribed) callback(data.photos);
+          return true;
+        }
+      }
+    } catch (e) {
+      console.warn("API photos fetch warning", e);
+    }
+    return false;
+  };
+
+  fetchGlobalAPI();
+  const intervalId = setInterval(fetchGlobalAPI, 4000);
+
+  let unsubscribeFirestore = () => {};
   try {
     const colRef = collection(db, COLLECTION_NAME);
     const q = query(colRef, orderBy("createdAt", "desc"));
 
-    return onSnapshot(
+    unsubscribeFirestore = onSnapshot(
       q,
       (snapshot) => {
         const cloudDocs: PhotoItem[] = [];
@@ -116,22 +148,19 @@ export function subscribePhotosCloud(callback: (records: PhotoItem[]) => void) {
           });
         });
 
-        if (cloudDocs.length > 0) {
+        if (cloudDocs.length > 0 && isSubscribed) {
           callback(cloudDocs);
-        } else {
-          callback(getLocalPhotos());
         }
       },
-      (error) => {
-        console.warn("Firestore photo subscription error, using local storage", error);
-        callback(getLocalPhotos());
-      }
+      () => {}
     );
-  } catch (e) {
-    console.warn("Firestore photo subscribe init error", e);
-    callback(getLocalPhotos());
-    return () => {};
-  }
+  } catch (e) {}
+
+  return () => {
+    isSubscribed = false;
+    clearInterval(intervalId);
+    unsubscribeFirestore();
+  };
 }
 
 export function getLocalPhotos(): PhotoItem[] {
@@ -150,6 +179,10 @@ export function getLocalPhotos(): PhotoItem[] {
 
 export async function clearAllPhotosCloud(): Promise<void> {
   localStorage.removeItem("boda_lucia_photos");
+  try {
+    await fetch("/api/photos", { method: "DELETE" });
+  } catch (e) {}
+
   try {
     const colRef = collection(db, COLLECTION_NAME);
     const snapshot = await getDocs(colRef);

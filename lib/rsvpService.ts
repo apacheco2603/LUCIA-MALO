@@ -25,7 +25,18 @@ export interface RSVPRecord {
 const COLLECTION_NAME = "rsvps";
 
 export async function saveRSVP(rsvpData: Omit<RSVPRecord, "id">): Promise<void> {
-  // 1. Save to LocalStorage as instant local fallback
+  // 1. Save to Server API Endpoint (/api/rsvp) - Works globally across all devices
+  try {
+    await fetch("/api/rsvp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(rsvpData),
+    });
+  } catch (e) {
+    console.warn("Server API save warning", e);
+  }
+
+  // 2. Save to LocalStorage as instant local fallback
   try {
     localStorage.setItem("boda_lucia_rsvp", JSON.stringify(rsvpData));
     const savedListRaw = localStorage.getItem("boda_lucia_rsvp_list");
@@ -46,7 +57,7 @@ export async function saveRSVP(rsvpData: Omit<RSVPRecord, "id">): Promise<void> 
     console.warn("LocalStorage save error", e);
   }
 
-  // 2. Save to Cloud Firestore in the cloud
+  // 3. Save to Cloud Firestore
   try {
     const colRef = collection(db, COLLECTION_NAME);
     await addDoc(colRef, {
@@ -54,43 +65,69 @@ export async function saveRSVP(rsvpData: Omit<RSVPRecord, "id">): Promise<void> 
       createdAt: serverTimestamp(),
     });
   } catch (err) {
-    console.warn("Firestore save fallback to local storage", err);
+    console.warn("Firestore save fallback", err);
   }
 }
 
 export function subscribeRSVPs(callback: (records: RSVPRecord[]) => void) {
+  let isSubscribed = true;
+
+  const fetchGlobalAPI = async () => {
+    try {
+      const res = await fetch("/api/rsvp", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data.rsvps) && data.rsvps.length > 0) {
+          if (isSubscribed) callback(data.rsvps);
+          return true;
+        }
+      }
+    } catch (e) {
+      console.warn("API fetch warning", e);
+    }
+    return false;
+  };
+
+  fetchGlobalAPI();
+
+  // Polling fallback to check API every 4 seconds
+  const intervalId = setInterval(fetchGlobalAPI, 4000);
+
+  // Firestore real-time listener as secondary sync
+  let unsubscribeFirestore = () => {};
   try {
     const colRef = collection(db, COLLECTION_NAME);
     const q = query(colRef, orderBy("createdAt", "desc"));
 
-    return onSnapshot(
+    unsubscribeFirestore = onSnapshot(
       q,
       (snapshot) => {
         const cloudDocs: RSVPRecord[] = [];
-        snapshot.forEach((doc) => {
-          const data = doc.data() as RSVPRecord;
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data() as RSVPRecord;
           cloudDocs.push({
             ...data,
-            id: doc.id,
+            id: docSnap.id,
           });
         });
 
-        if (cloudDocs.length > 0) {
+        if (cloudDocs.length > 0 && isSubscribed) {
           callback(cloudDocs);
-        } else {
-          callback(getLocalRSVPs());
         }
       },
-      (error) => {
-        console.warn("Firestore subscription error, using local storage", error);
-        callback(getLocalRSVPs());
+      () => {
+        // Fallback to local storage if needed
       }
     );
   } catch (e) {
-    console.warn("Firestore subscription init error", e);
-    callback(getLocalRSVPs());
-    return () => {};
+    // Ignore init errors
   }
+
+  return () => {
+    isSubscribed = false;
+    clearInterval(intervalId);
+    unsubscribeFirestore();
+  };
 }
 
 export function getLocalRSVPs(): RSVPRecord[] {

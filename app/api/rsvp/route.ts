@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
 import fs from "fs";
 import path from "path";
-
-// Cloud DB endpoint for guaranteed cross-device synchronization (PC & Mobile)
-const CLOUD_OBJECT_URL = "https://api.restful-api.dev/objects/ff808181a09d98f701a0a515cba41037";
 
 const dataDir = path.join(process.cwd(), "data");
 const filePath = path.join(dataDir, "rsvps.json");
@@ -16,9 +14,7 @@ function ensureDataFile() {
     if (!fs.existsSync(filePath)) {
       fs.writeFileSync(filePath, JSON.stringify([]), "utf-8");
     }
-  } catch (e) {
-    console.warn("Disk mkdir/write warning", e);
-  }
+  } catch (e) {}
 }
 
 function getLocalRSVPs(): any[] {
@@ -28,9 +24,7 @@ function getLocalRSVPs(): any[] {
       const content = fs.readFileSync(filePath, "utf-8");
       return JSON.parse(content || "[]");
     }
-  } catch (e) {
-    console.warn("Local file read warning", e);
-  }
+  } catch (e) {}
   return [];
 }
 
@@ -38,39 +32,7 @@ function saveLocalRSVPs(data: any[]) {
   try {
     ensureDataFile();
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
-  } catch (e) {
-    console.warn("Local file write warning", e);
-  }
-}
-
-async function fetchCloudRSVPs(): Promise<any[]> {
-  try {
-    const res = await fetch(CLOUD_OBJECT_URL, { cache: "no-store" });
-    if (res.ok) {
-      const body = await res.json();
-      if (body && body.data && Array.isArray(body.data.list)) {
-        return body.data.list;
-      }
-    }
-  } catch (e) {
-    console.warn("Cloud DB fetch warning", e);
-  }
-  return [];
-}
-
-async function syncCloudRSVPs(list: any[]) {
-  try {
-    await fetch(CLOUD_OBJECT_URL, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: "boda_lucia_rsvps",
-        data: { list },
-      }),
-    });
-  } catch (e) {
-    console.warn("Cloud DB sync warning", e);
-  }
+  } catch (e) {}
 }
 
 function mergeRSVPs(listA: any[], listB: any[]): any[] {
@@ -95,9 +57,6 @@ function mergeRSVPs(listA: any[], listB: any[]): any[] {
   return Array.from(mergedMap.values());
 }
 
-
-
-
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -110,27 +69,42 @@ const corsHeaders = {
   "Expires": "0",
 };
 
-
 export async function OPTIONS() {
   return new NextResponse(null, { status: 200, headers: corsHeaders });
 }
 
 export async function GET() {
+  try {
+    const { data: supaData, error } = await supabase
+      .from("rsvps")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!error && Array.isArray(supaData) && supaData.length > 0) {
+      const formatted = supaData.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        email: item.email || "",
+        attending: item.attending || "yes",
+        guestsCount: item.guestsCount || 1,
+        dietary: Array.isArray(item.dietary) ? item.dietary : [],
+        dietaryNotes: item.dietaryNotes || "",
+        dedicatedSong: item.dedicatedSong || "",
+        message: item.message || "",
+        submittedAt: item.submittedAt || "",
+      }));
+      return NextResponse.json(
+        { success: true, count: formatted.length, rsvps: formatted },
+        { headers: corsHeaders }
+      );
+    }
+  } catch (e) {
+    console.warn("API GET Supabase warning", e);
+  }
+
   const localItems = getLocalRSVPs();
-  const cloudItems = await fetchCloudRSVPs();
-
-  const merged = mergeRSVPs(cloudItems, localItems);
-
-  // Keep local file and cloud DB synchronized with merged list
-  if (merged.length > localItems.length) {
-    saveLocalRSVPs(merged);
-  }
-  if (merged.length > cloudItems.length) {
-    syncCloudRSVPs(merged);
-  }
-
   return NextResponse.json(
-    { success: true, count: merged.length, rsvps: merged },
+    { success: true, count: localItems.length, rsvps: localItems },
     { headers: corsHeaders }
   );
 }
@@ -145,15 +119,29 @@ export async function POST(req: Request) {
     let newRecords: any[] = [];
     if (Array.isArray(body)) {
       newRecords = body.map((item) => ({
-        ...item,
         id: item.id || "rsvp_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+        name: item.name,
+        email: item.email || "",
+        attending: item.attending || "yes",
+        guestsCount: item.guestsCount || 1,
+        dietary: Array.isArray(item.dietary) ? item.dietary : [],
+        dietaryNotes: item.dietaryNotes || "",
+        dedicatedSong: item.dedicatedSong || "",
+        message: item.message || "",
         submittedAt: item.submittedAt || new Date().toLocaleString("es-ES"),
       }));
     } else if (body.name) {
       newRecords = [
         {
-          ...body,
           id: body.id || "rsvp_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+          name: body.name,
+          email: body.email || "",
+          attending: body.attending || "yes",
+          guestsCount: body.guestsCount || 1,
+          dietary: Array.isArray(body.dietary) ? body.dietary : [],
+          dietaryNotes: body.dietaryNotes || "",
+          dedicatedSong: body.dedicatedSong || "",
+          message: body.message || "",
           submittedAt: body.submittedAt || new Date().toLocaleString("es-ES"),
         },
       ];
@@ -161,15 +149,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Nombre es requerido" }, { status: 400, headers: corsHeaders });
     }
 
-    const currentLocal = getLocalRSVPs();
-    const cloudItems = await fetchCloudRSVPs();
-    const updated = mergeRSVPs(newRecords, mergeRSVPs(cloudItems, currentLocal));
+    // Save to Supabase
+    try {
+      await supabase.from("rsvps").upsert(newRecords);
+    } catch (e) {
+      console.warn("API POST Supabase warning", e);
+    }
 
-    saveLocalRSVPs(updated);
-    await syncCloudRSVPs(updated);
+    const currentLocal = getLocalRSVPs();
+    const updatedLocal = mergeRSVPs(newRecords, currentLocal);
+    saveLocalRSVPs(updatedLocal);
 
     return NextResponse.json(
-      { success: true, count: updated.length, rsvps: updated },
+      { success: true, count: updatedLocal.length, rsvps: updatedLocal },
       { headers: corsHeaders }
     );
   } catch (e: any) {
@@ -181,10 +173,10 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE() {
+  try {
+    await supabase.from("rsvps").delete().neq("id", "0");
+  } catch (e) {}
+
   saveLocalRSVPs([]);
-  await syncCloudRSVPs([]);
   return NextResponse.json({ success: true, count: 0, rsvps: [] }, { headers: corsHeaders });
 }
-
-
-

@@ -1,15 +1,4 @@
-import { db } from "./firebase";
-import {
-  collection,
-  addDoc,
-  query,
-  orderBy,
-  onSnapshot,
-  deleteDoc,
-  doc,
-  getDocs,
-  serverTimestamp,
-} from "firebase/firestore";
+import { supabase } from "./supabase";
 
 export interface PhotoItem {
   id: string;
@@ -23,8 +12,6 @@ export interface PhotoItem {
   isUserUploaded?: boolean;
   createdAt?: any;
 }
-
-const COLLECTION_NAME = "photos";
 
 export function compressImage(dataUrl: string, maxWidth = 1024, quality = 0.75): Promise<string> {
   return new Promise((resolve) => {
@@ -62,60 +49,105 @@ export async function savePhotoCloud(photoData: Omit<PhotoItem, "id">): Promise<
     compressedUrl = await compressImage(photoData.url);
   }
 
-  const payload = {
+  const record: PhotoItem = {
     ...photoData,
+    id: "photo_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
     url: compressedUrl,
-    createdAt: serverTimestamp(),
   };
 
-  // 1. Envío directo al Servidor (/api/photos)
+  // 1. Save to Supabase
+  try {
+    await supabase.from("photos").insert([
+      {
+        id: record.id,
+        url: record.url,
+        title: record.title || "",
+        author: record.author || "",
+        category: record.category || "fiesta",
+        likes: record.likes || 0,
+        commentsCount: record.commentsCount || 0,
+        uploadedAt: record.uploadedAt || new Date().toLocaleString("es-ES"),
+        isUserUploaded: record.isUserUploaded ?? true,
+      },
+    ]);
+  } catch (err) {
+    console.warn("Supabase photo upload error", err);
+  }
+
+  // 2. Backup API call
   try {
     await fetch("/api/photos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(record),
     });
-  } catch (e) {
-    console.warn("Server API photo save error", e);
-  }
-
-  // 2. Respaldo en Firestore
-  try {
-    const colRef = collection(db, COLLECTION_NAME);
-    await addDoc(colRef, payload);
-  } catch (err) {
-    console.warn("Firestore photo upload error", err);
-  }
+  } catch (e) {}
 }
 
 export function subscribePhotosCloud(callback: (records: PhotoItem[]) => void) {
   let isSubscribed = true;
 
-  const fetchGlobalAPI = async () => {
+  const fetchPhotos = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("photos")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const formatted: PhotoItem[] = data.map((item: any) => ({
+          id: item.id,
+          url: item.url,
+          title: item.title || "",
+          author: item.author || "",
+          category: item.category || "fiesta",
+          likes: item.likes || 0,
+          commentsCount: item.commentsCount || 0,
+          uploadedAt: item.uploadedAt || "",
+          isUserUploaded: item.isUserUploaded ?? true,
+        }));
+        if (isSubscribed) {
+          callback(formatted);
+          return;
+        }
+      }
+    } catch (e) {}
+
+    // Fallback API
     try {
       const res = await fetch("/api/photos", { cache: "no-store" });
       if (res.ok) {
-        const data = await res.json();
-        const serverPhotos: PhotoItem[] = Array.isArray(data.photos) ? data.photos : [];
+        const json = await res.json();
+        const serverPhotos: PhotoItem[] = Array.isArray(json.photos) ? json.photos : [];
         if (isSubscribed) {
           callback(serverPhotos);
         }
       }
-    } catch (e) {
-      console.warn("API photos fetch error", e);
-    }
+    } catch (e) {}
   };
 
-  fetchGlobalAPI();
-  const intervalId = setInterval(fetchGlobalAPI, 4000);
+  fetchPhotos();
+
+  let channel: any = null;
+  try {
+    channel = supabase
+      .channel("public:photos")
+      .on("postgres_changes", { event: "*", schema: "public", table: "photos" }, () => {
+        fetchPhotos();
+      })
+      .subscribe();
+  } catch (e) {}
+
+  const intervalId = setInterval(fetchPhotos, 4000);
 
   return () => {
     isSubscribed = false;
     clearInterval(intervalId);
+    if (channel) {
+      supabase.removeChannel(channel);
+    }
   };
 }
-
-
 
 export function getLocalPhotos(): PhotoItem[] {
   if (typeof window === "undefined") return [];
@@ -124,25 +156,21 @@ export function getLocalPhotos(): PhotoItem[] {
     try {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed)) return parsed;
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) {}
   }
   return [];
 }
 
 export async function clearAllPhotosCloud(): Promise<void> {
-  localStorage.removeItem("boda_lucia_photos");
+  try {
+    await supabase.from("photos").delete().neq("id", "0");
+  } catch (e) {}
+
   try {
     await fetch("/api/photos", { method: "DELETE" });
   } catch (e) {}
 
-  try {
-    const colRef = collection(db, COLLECTION_NAME);
-    const snapshot = await getDocs(colRef);
-    const deletePromises = snapshot.docs.map((docSnap) => deleteDoc(doc(db, COLLECTION_NAME, docSnap.id)));
-    await Promise.all(deletePromises);
-  } catch (e) {
-    console.warn("Clear photos cloud error", e);
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("boda_lucia_photos");
   }
 }

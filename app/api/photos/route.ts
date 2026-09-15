@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
 import fs from "fs";
 import path from "path";
-
-// Cloud DB endpoint for guaranteed cross-device photo synchronization
-const CLOUD_OBJECT_URL = "https://api.restful-api.dev/objects/ff808181a09d98f701a0a5166b831041";
 
 const dataDir = path.join(process.cwd(), "data");
 const filePath = path.join(dataDir, "photos.json");
@@ -16,9 +14,7 @@ function ensureDataFile() {
     if (!fs.existsSync(filePath)) {
       fs.writeFileSync(filePath, JSON.stringify([]), "utf-8");
     }
-  } catch (e) {
-    console.warn("Disk mkdir/write warning for photos", e);
-  }
+  } catch (e) {}
 }
 
 function getLocalPhotos(): any[] {
@@ -28,9 +24,7 @@ function getLocalPhotos(): any[] {
       const content = fs.readFileSync(filePath, "utf-8");
       return JSON.parse(content || "[]");
     }
-  } catch (e) {
-    console.warn("Local photos file read warning", e);
-  }
+  } catch (e) {}
   return [];
 }
 
@@ -38,51 +32,7 @@ function saveLocalPhotos(data: any[]) {
   try {
     ensureDataFile();
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
-  } catch (e) {
-    console.warn("Local photos file write warning", e);
-  }
-}
-
-async function fetchCloudPhotos(): Promise<any[]> {
-  try {
-    const res = await fetch(CLOUD_OBJECT_URL, { cache: "no-store" });
-    if (res.ok) {
-      const body = await res.json();
-      if (body && body.data && Array.isArray(body.data.list)) {
-        return body.data.list;
-      }
-    }
-  } catch (e) {
-    console.warn("Cloud DB fetch photos warning", e);
-  }
-  return [];
-}
-
-async function syncCloudPhotos(list: any[]) {
-  try {
-    await fetch(CLOUD_OBJECT_URL, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: "boda_lucia_photos",
-        data: { list },
-      }),
-    });
-  } catch (e) {
-    console.warn("Cloud DB sync photos warning", e);
-  }
-}
-
-function mergePhotos(listA: any[], listB: any[]): any[] {
-  const mergedMap = new Map();
-  [...listA, ...listB].forEach((item) => {
-    if (!item || !item.url) return;
-    const key = item.id || item.url.slice(-40);
-    if (!mergedMap.has(key)) {
-      mergedMap.set(key, item);
-    }
-  });
-  return Array.from(mergedMap.values());
+  } catch (e) {}
 }
 
 export const dynamic = "force-dynamic";
@@ -97,26 +47,28 @@ const corsHeaders = {
   "Expires": "0",
 };
 
-
 export async function OPTIONS() {
   return new NextResponse(null, { status: 200, headers: corsHeaders });
 }
 
 export async function GET() {
+  try {
+    const { data: supaData, error } = await supabase
+      .from("photos")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!error && Array.isArray(supaData) && supaData.length > 0) {
+      return NextResponse.json(
+        { success: true, count: supaData.length, photos: supaData },
+        { headers: corsHeaders }
+      );
+    }
+  } catch (e) {}
+
   const localItems = getLocalPhotos();
-  const cloudItems = await fetchCloudPhotos();
-
-  const merged = mergePhotos(cloudItems, localItems);
-
-  if (merged.length > localItems.length) {
-    saveLocalPhotos(merged);
-  }
-  if (merged.length > cloudItems.length) {
-    syncCloudPhotos(merged);
-  }
-
   return NextResponse.json(
-    { success: true, count: merged.length, photos: merged },
+    { success: true, count: localItems.length, photos: localItems },
     { headers: corsHeaders }
   );
 }
@@ -129,20 +81,27 @@ export async function POST(req: Request) {
     }
 
     const newRecord = {
-      ...body,
-      id: "photo_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
-      uploadedAt: body.uploadedAt || "Hoy",
+      id: body.id || "photo_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+      url: body.url,
+      title: body.title || "",
+      author: body.author || "",
+      category: body.category || "fiesta",
+      likes: body.likes || 0,
+      commentsCount: body.commentsCount || 0,
+      uploadedAt: body.uploadedAt || new Date().toLocaleString("es-ES"),
+      isUserUploaded: body.isUserUploaded ?? true,
     };
 
-    const currentLocal = getLocalPhotos();
-    const cloudItems = await fetchCloudPhotos();
-    const updated = mergePhotos([newRecord], mergePhotos(cloudItems, currentLocal));
+    try {
+      await supabase.from("photos").upsert([newRecord]);
+    } catch (e) {}
 
-    saveLocalPhotos(updated);
-    await syncCloudPhotos(updated);
+    const currentLocal = getLocalPhotos();
+    const updatedLocal = [newRecord, ...currentLocal];
+    saveLocalPhotos(updatedLocal);
 
     return NextResponse.json(
-      { success: true, record: newRecord, photos: updated },
+      { success: true, record: newRecord, photos: updatedLocal },
       { headers: corsHeaders }
     );
   } catch (e: any) {
@@ -154,9 +113,10 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE() {
+  try {
+    await supabase.from("photos").delete().neq("id", "0");
+  } catch (e) {}
+
   saveLocalPhotos([]);
-  await syncCloudPhotos([]);
   return NextResponse.json({ success: true, count: 0, photos: [] }, { headers: corsHeaders });
 }
-
-

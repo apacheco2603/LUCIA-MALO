@@ -1,9 +1,4 @@
-import { db } from "./firebase";
-import {
-  collection,
-  addDoc,
-  serverTimestamp,
-} from "firebase/firestore";
+import { supabase } from "./supabase";
 
 export interface RSVPRecord {
   id?: string;
@@ -18,9 +13,6 @@ export interface RSVPRecord {
   submittedAt: string;
   createdAt?: any;
 }
-
-const CLOUD_DB_URL = "https://api.restful-api.dev/objects/ff808181a09d98f701a0a515cba41037";
-const COLLECTION_NAME = "rsvps";
 
 function mergeRSVPLists(listA: RSVPRecord[], listB: RSVPRecord[]): RSVPRecord[] {
   const mergedMap = new Map<string, RSVPRecord>();
@@ -50,37 +42,36 @@ export async function saveRSVP(rsvpData: Omit<RSVPRecord, "id">): Promise<void> 
     id: "rsvp_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
   };
 
-  // 1. Guardar copia del invitado actual en localStorage para vista de confirmación
+  // 1. Guardar en localStorage para vista inmediata del usuario
   try {
     localStorage.setItem("boda_lucia_rsvp", JSON.stringify(recordWithId));
   } catch (e) {}
 
-  // 2. Guardado DIRECTO e instantáneo en la Base de Datos Cloud en tiempo real
+  // 2. Guardar en Supabase (Base de datos real de producción)
   try {
-    const cloudRes = await fetch(CLOUD_DB_URL, { cache: "no-store" });
-    let currentList: RSVPRecord[] = [];
-    if (cloudRes.ok) {
-      const body = await cloudRes.json();
-      if (body && body.data && Array.isArray(body.data.list)) {
-        currentList = body.data.list;
-      }
+    const { error } = await supabase.from("rsvps").insert([
+      {
+        id: recordWithId.id,
+        name: recordWithId.name,
+        email: recordWithId.email || "",
+        attending: recordWithId.attending,
+        guestsCount: recordWithId.guestsCount || 1,
+        dietary: recordWithId.dietary || [],
+        dietaryNotes: recordWithId.dietaryNotes || "",
+        dedicatedSong: recordWithId.dedicatedSong || "",
+        message: recordWithId.message || "",
+        submittedAt: recordWithId.submittedAt || new Date().toLocaleString("es-ES"),
+      },
+    ]);
+
+    if (error) {
+      console.warn("Supabase insert warning:", error);
     }
-
-    const updatedList = mergeRSVPLists([recordWithId], currentList);
-
-    await fetch(CLOUD_DB_URL, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: "boda_lucia_rsvps",
-        data: { list: updatedList },
-      }),
-    });
   } catch (e) {
-    console.warn("Direct Cloud DB PUT error", e);
+    console.warn("Supabase save error:", e);
   }
 
-  // 3. Respaldo en endpoint del servidor local /api/rsvp
+  // 3. Respaldo secundario en /api/rsvp
   try {
     await fetch("/api/rsvp", {
       method: "POST",
@@ -88,43 +79,48 @@ export async function saveRSVP(rsvpData: Omit<RSVPRecord, "id">): Promise<void> 
       body: JSON.stringify(recordWithId),
     });
   } catch (e) {}
-
-  // 4. Respaldo secundario en Firestore
-  try {
-    const colRef = collection(db, COLLECTION_NAME);
-    await addDoc(colRef, {
-      ...recordWithId,
-      createdAt: serverTimestamp(),
-    });
-  } catch (err) {}
 }
 
 export function subscribeRSVPs(callback: (records: RSVPRecord[]) => void) {
   let isSubscribed = true;
 
-  const fetchDirect = async () => {
-    // 1. Intentar consulta DIRECTA a Cloud DB (cero almacenamiento intermedio, cero caché)
+  const fetchRSVPs = async () => {
+    // 1. Intentar obtener desde Supabase
     try {
-      const res = await fetch(CLOUD_DB_URL, { cache: "no-store" });
-      if (res.ok) {
-        const body = await res.json();
-        if (body && body.data && Array.isArray(body.data.list)) {
-          if (isSubscribed) {
-            callback(body.data.list);
-          }
+      const { data, error } = await supabase
+        .from("rsvps")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const formatted: RSVPRecord[] = data.map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          email: item.email || "",
+          attending: item.attending || "yes",
+          guestsCount: item.guestsCount || 1,
+          dietary: Array.isArray(item.dietary) ? item.dietary : [],
+          dietaryNotes: item.dietaryNotes || "",
+          dedicatedSong: item.dedicatedSong || "",
+          message: item.message || "",
+          submittedAt: item.submittedAt || "",
+        }));
+
+        if (isSubscribed) {
+          callback(formatted);
           return;
         }
       }
     } catch (e) {
-      console.warn("Direct Cloud DB fetch error", e);
+      console.warn("Supabase fetch warning:", e);
     }
 
-    // 2. Respaldo a /api/rsvp si falla la conexión directa
+    // 2. Respaldo a /api/rsvp si falla Supabase o tabla está vacía
     try {
       const res = await fetch("/api/rsvp", { cache: "no-store" });
       if (res.ok) {
-        const data = await res.json();
-        const serverRsvps: RSVPRecord[] = Array.isArray(data.rsvps) ? data.rsvps : [];
+        const json = await res.json();
+        const serverRsvps: RSVPRecord[] = Array.isArray(json.rsvps) ? json.rsvps : [];
         if (isSubscribed) {
           callback(serverRsvps);
         }
@@ -132,14 +128,32 @@ export function subscribeRSVPs(callback: (records: RSVPRecord[]) => void) {
     } catch (e) {}
   };
 
-  fetchDirect();
+  fetchRSVPs();
 
-  // Polling rápido cada 2 segundos mientras el Panel de Novios esté abierto
-  const intervalId = setInterval(fetchDirect, 2000);
+  // Suscripción Realtime Supabase (Escucha cambios instantáneos)
+  let channel: any = null;
+  try {
+    channel = supabase
+      .channel("public:rsvps")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "rsvps" },
+        () => {
+          fetchRSVPs();
+        }
+      )
+      .subscribe();
+  } catch (e) {}
+
+  // Polling de respaldo cada 3 segundos
+  const intervalId = setInterval(fetchRSVPs, 3000);
 
   return () => {
     isSubscribed = false;
     clearInterval(intervalId);
+    if (channel) {
+      supabase.removeChannel(channel);
+    }
   };
 }
 
@@ -157,14 +171,7 @@ export function getLocalRSVPs(): RSVPRecord[] {
 
 export async function clearAllRSVPsCloud(): Promise<void> {
   try {
-    await fetch(CLOUD_DB_URL, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: "boda_lucia_rsvps",
-        data: { list: [] },
-      }),
-    });
+    await supabase.from("rsvps").delete().neq("id", "0");
   } catch (e) {}
 
   try {
@@ -176,7 +183,3 @@ export async function clearAllRSVPsCloud(): Promise<void> {
     localStorage.removeItem("boda_lucia_rsvp_list");
   }
 }
-
-
-
-

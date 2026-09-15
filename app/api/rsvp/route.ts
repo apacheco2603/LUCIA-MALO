@@ -77,6 +77,8 @@ function mergeRSVPs(listA: any[], listB: any[]): any[] {
   const mergedMap = new Map();
   [...listA, ...listB].forEach((item) => {
     if (!item || !item.name) return;
+    // Exclude old dummy test artifact if present
+    if (item.name === "Test User" && !item.email && !item.submittedAt) return;
     const key =
       item.id || `${item.name.trim().toLowerCase()}_${item.email ? item.email.trim().toLowerCase() : ""}_${item.submittedAt || ""}`;
     if (!mergedMap.has(key)) {
@@ -106,24 +108,37 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    if (!body || !body.name) {
+    if (!body) {
+      return NextResponse.json({ error: "Cuerpo de solicitud requerido" }, { status: 400 });
+    }
+
+    let newRecords: any[] = [];
+    if (Array.isArray(body)) {
+      newRecords = body.map((item) => ({
+        ...item,
+        id: item.id || "rsvp_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+        submittedAt: item.submittedAt || new Date().toLocaleString("es-ES"),
+      }));
+    } else if (body.name) {
+      newRecords = [
+        {
+          ...body,
+          id: body.id || "rsvp_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+          submittedAt: body.submittedAt || new Date().toLocaleString("es-ES"),
+        },
+      ];
+    } else {
       return NextResponse.json({ error: "Nombre es requerido" }, { status: 400 });
     }
 
-    const newRecord = {
-      ...body,
-      id: "rsvp_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
-      submittedAt: body.submittedAt || new Date().toLocaleString("es-ES"),
-    };
-
     const currentLocal = getLocalRSVPs();
     const cloudItems = await fetchCloudRSVPs();
-    const updated = mergeRSVPs([newRecord], mergeRSVPs(cloudItems, currentLocal));
+    const updated = mergeRSVPs(newRecords, mergeRSVPs(cloudItems, currentLocal));
 
     saveLocalRSVPs(updated);
     await syncCloudRSVPs(updated);
 
-    return NextResponse.json({ success: true, record: newRecord, rsvps: updated });
+    return NextResponse.json({ success: true, count: updated.length, rsvps: updated });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || "Error al guardar confirmación" }, { status: 500 });
   }
@@ -134,4 +149,5 @@ export async function DELETE() {
   await syncCloudRSVPs([]);
   return NextResponse.json({ success: true, count: 0, rsvps: [] });
 }
+
 

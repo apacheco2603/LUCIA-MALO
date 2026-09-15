@@ -96,6 +96,19 @@ export function subscribeRSVPs(callback: (records: RSVPRecord[]) => void) {
         const localRsvps = getLocalRSVPs();
         const merged = mergeRSVPArrays(serverRsvps, localRsvps);
 
+        // If client device has local items not present on server, sync them to server!
+        if (localRsvps.length > 0 && merged.length > serverRsvps.length) {
+          try {
+            fetch("/api/rsvp", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(localRsvps),
+            });
+          } catch (e) {
+            console.warn("Auto-sync local to server error", e);
+          }
+        }
+
         if (merged.length > 0) {
           try {
             localStorage.setItem("boda_lucia_rsvp_list", JSON.stringify(merged));
@@ -110,6 +123,7 @@ export function subscribeRSVPs(callback: (records: RSVPRecord[]) => void) {
     } catch (e) {
       console.warn("API fetch warning", e);
     }
+
 
     // Fallback: if network API call fails, provide local storage
     if (isSubscribed) {

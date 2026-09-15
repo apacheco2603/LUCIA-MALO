@@ -73,11 +73,9 @@ async function syncCloudRSVPs(list: any[]) {
   }
 }
 
-function mergeRSVPs(newRecords: any[], existingRecords: any[]): any[] {
+function mergeRSVPs(listA: any[], listB: any[]): any[] {
   const mergedMap = new Map();
-
-  // Process existing (older) records first, then newRecords second so new records overwrite existing ones
-  [...existingRecords, ...newRecords].forEach((item) => {
+  [...listA, ...listB].forEach((item) => {
     if (!item || !item.name || !String(item.name).trim()) return;
     const nameKey = String(item.name).trim().toLowerCase();
     const emailKey = item.email ? String(item.email).trim().toLowerCase() : "";
@@ -90,22 +88,28 @@ function mergeRSVPs(newRecords: any[], existingRecords: any[]): any[] {
       mergedMap.set(key, {
         ...existing,
         ...item,
+        id: item.id || existing.id,
       });
     }
   });
-
   return Array.from(mergedMap.values());
 }
 
 
 
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+  "Pragma": "no-cache",
+  "Expires": "0",
 };
+
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 200, headers: corsHeaders });

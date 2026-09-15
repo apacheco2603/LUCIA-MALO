@@ -85,11 +85,18 @@ function mergePhotos(listA: any[], listB: any[]): any[] {
   return Array.from(mergedMap.values());
 }
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+  "Pragma": "no-cache",
+  "Expires": "0",
 };
+
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 200, headers: corsHeaders });

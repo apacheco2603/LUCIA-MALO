@@ -68,7 +68,7 @@ export async function savePhotoCloud(photoData: Omit<PhotoItem, "id">): Promise<
     createdAt: serverTimestamp(),
   };
 
-  // 1. Post to Server API Endpoint (/api/photos)
+  // 1. Envío directo al Servidor (/api/photos)
   try {
     await fetch("/api/photos", {
       method: "POST",
@@ -76,31 +76,10 @@ export async function savePhotoCloud(photoData: Omit<PhotoItem, "id">): Promise<
       body: JSON.stringify(payload),
     });
   } catch (e) {
-    console.warn("Server API photo save warning", e);
+    console.warn("Server API photo save error", e);
   }
 
-  // 2. Save locally as fallback
-  try {
-    const savedRaw = localStorage.getItem("boda_lucia_photos");
-    let existingList: PhotoItem[] = [];
-    if (savedRaw) {
-      try {
-        existingList = JSON.parse(savedRaw);
-        if (!Array.isArray(existingList)) existingList = [];
-      } catch (e) {
-        existingList = [];
-      }
-    }
-    const localItem: PhotoItem = {
-      ...payload,
-      id: "p_" + Date.now(),
-    };
-    localStorage.setItem("boda_lucia_photos", JSON.stringify([localItem, ...existingList]));
-  } catch (e) {
-    console.warn("LocalStorage photo save warning", e);
-  }
-
-  // 3. Upload to Cloud Firestore
+  // 2. Respaldo en Firestore
   try {
     const colRef = collection(db, COLLECTION_NAME);
     await addDoc(colRef, payload);
@@ -109,26 +88,8 @@ export async function savePhotoCloud(photoData: Omit<PhotoItem, "id">): Promise<
   }
 }
 
-function mergePhotoArrays(listA: PhotoItem[], listB: PhotoItem[]): PhotoItem[] {
-  const mergedMap = new Map<string, PhotoItem>();
-  [...listA, ...listB].forEach((item) => {
-    if (!item || !item.url) return;
-    const key = item.id || item.url.slice(-40);
-    if (!mergedMap.has(key)) {
-      mergedMap.set(key, item);
-    }
-  });
-  return Array.from(mergedMap.values());
-}
-
 export function subscribePhotosCloud(callback: (records: PhotoItem[]) => void) {
   let isSubscribed = true;
-
-  // 1. Instantly return local items on subscription start
-  const initialLocal = getLocalPhotos();
-  if (initialLocal.length > 0) {
-    callback(initialLocal);
-  }
 
   const fetchGlobalAPI = async () => {
     try {
@@ -136,65 +97,24 @@ export function subscribePhotosCloud(callback: (records: PhotoItem[]) => void) {
       if (res.ok) {
         const data = await res.json();
         const serverPhotos: PhotoItem[] = Array.isArray(data.photos) ? data.photos : [];
-        const localPhotos = getLocalPhotos();
-        const merged = mergePhotoArrays(serverPhotos, localPhotos);
-
-        if (merged.length > 0) {
-          try {
-            localStorage.setItem("boda_lucia_photos", JSON.stringify(merged));
-          } catch (e) {}
-        }
-
         if (isSubscribed) {
-          callback(merged);
+          callback(serverPhotos);
         }
-        return true;
       }
     } catch (e) {
-      console.warn("API photos fetch warning", e);
+      console.warn("API photos fetch error", e);
     }
-
-    if (isSubscribed) {
-      callback(getLocalPhotos());
-    }
-    return false;
   };
 
   fetchGlobalAPI();
   const intervalId = setInterval(fetchGlobalAPI, 4000);
 
-  let unsubscribeFirestore = () => {};
-  try {
-    const colRef = collection(db, COLLECTION_NAME);
-    const q = query(colRef, orderBy("createdAt", "desc"));
-
-    unsubscribeFirestore = onSnapshot(
-      q,
-      (snapshot) => {
-        const cloudDocs: PhotoItem[] = [];
-        snapshot.forEach((docSnap) => {
-          const data = docSnap.data() as PhotoItem;
-          cloudDocs.push({
-            ...data,
-            id: docSnap.id,
-          });
-        });
-
-        if (cloudDocs.length > 0 && isSubscribed) {
-          const merged = mergePhotoArrays(cloudDocs, getLocalPhotos());
-          callback(merged);
-        }
-      },
-      () => {}
-    );
-  } catch (e) {}
-
   return () => {
     isSubscribed = false;
     clearInterval(intervalId);
-    unsubscribeFirestore();
   };
 }
+
 
 
 export function getLocalPhotos(): PhotoItem[] {

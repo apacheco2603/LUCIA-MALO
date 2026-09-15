@@ -2,67 +2,104 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
-// Firebase Realtime Cloud Database REST API endpoint for cross-device sync
-const CLOUD_DB_URL = "https://boda-lucia-malo-default-rtdb.firebaseio.com/rsvps.json";
+// Cloud DB endpoint for guaranteed cross-device synchronization (PC & Mobile)
+const CLOUD_OBJECT_URL = "https://api.restful-api.dev/objects/ff808181a09d98f701a0a515cba41037";
 
 const dataDir = path.join(process.cwd(), "data");
 const filePath = path.join(dataDir, "rsvps.json");
 
 function ensureDataFile() {
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-  if (!fs.existsSync(filePath)) {
-    fs.writeFileSync(filePath, JSON.stringify([]), "utf-8");
+  try {
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, JSON.stringify([]), "utf-8");
+    }
+  } catch (e) {
+    console.warn("Disk mkdir/write warning", e);
   }
 }
 
 function getLocalRSVPs(): any[] {
   try {
     ensureDataFile();
-    const content = fs.readFileSync(filePath, "utf-8");
-    return JSON.parse(content || "[]");
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath, "utf-8");
+      return JSON.parse(content || "[]");
+    }
   } catch (e) {
-    return [];
+    console.warn("Local file read warning", e);
   }
+  return [];
 }
 
 function saveLocalRSVPs(data: any[]) {
   try {
     ensureDataFile();
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
-  } catch (e) {}
+  } catch (e) {
+    console.warn("Local file write warning", e);
+  }
 }
 
-export async function GET() {
-  let cloudItems: any[] = [];
+async function fetchCloudRSVPs(): Promise<any[]> {
   try {
-    const res = await fetch(CLOUD_DB_URL, { cache: "no-store" });
+    const res = await fetch(CLOUD_OBJECT_URL, { cache: "no-store" });
     if (res.ok) {
-      const data = await res.json();
-      if (data && typeof data === "object") {
-        cloudItems = Object.keys(data)
-          .map((key) => ({
-            ...data[key],
-            id: key,
-          }))
-          .reverse();
+      const body = await res.json();
+      if (body && body.data && Array.isArray(body.data.list)) {
+        return body.data.list;
       }
     }
   } catch (e) {
-    console.warn("Cloud DB fetch fallback", e);
+    console.warn("Cloud DB fetch warning", e);
   }
+  return [];
+}
 
-  const localItems = getLocalRSVPs();
+async function syncCloudRSVPs(list: any[]) {
+  try {
+    await fetch(CLOUD_OBJECT_URL, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "boda_lucia_rsvps",
+        data: { list },
+      }),
+    });
+  } catch (e) {
+    console.warn("Cloud DB sync warning", e);
+  }
+}
+
+function mergeRSVPs(listA: any[], listB: any[]): any[] {
   const mergedMap = new Map();
-  [...cloudItems, ...localItems].forEach((item) => {
-    const key = item.id || (item.name ? item.name + "_" + (item.submittedAt || "") : Math.random().toString());
+  [...listA, ...listB].forEach((item) => {
+    if (!item || !item.name) return;
+    const key =
+      item.id || `${item.name.trim().toLowerCase()}_${item.email ? item.email.trim().toLowerCase() : ""}_${item.submittedAt || ""}`;
     if (!mergedMap.has(key)) {
       mergedMap.set(key, item);
     }
   });
+  return Array.from(mergedMap.values());
+}
 
-  const merged = Array.from(mergedMap.values());
+export async function GET() {
+  const localItems = getLocalRSVPs();
+  const cloudItems = await fetchCloudRSVPs();
+
+  const merged = mergeRSVPs(cloudItems, localItems);
+
+  // Keep local file and cloud DB synchronized with merged list
+  if (merged.length > localItems.length) {
+    saveLocalRSVPs(merged);
+  }
+  if (merged.length > cloudItems.length) {
+    syncCloudRSVPs(merged);
+  }
+
   return NextResponse.json({ success: true, count: merged.length, rsvps: merged });
 }
 
@@ -75,35 +112,26 @@ export async function POST(req: Request) {
 
     const newRecord = {
       ...body,
+      id: "rsvp_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
       submittedAt: body.submittedAt || new Date().toLocaleString("es-ES"),
     };
 
-    // 1. Post to Cloud DB for instant cross-device synchronization (PC & Mobile Phone)
-    try {
-      await fetch(CLOUD_DB_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newRecord),
-      });
-    } catch (e) {
-      console.warn("Cloud DB POST fallback", e);
-    }
-
-    // 2. Save locally
     const currentLocal = getLocalRSVPs();
-    const updatedLocal = [newRecord, ...currentLocal];
-    saveLocalRSVPs(updatedLocal);
+    const cloudItems = await fetchCloudRSVPs();
+    const updated = mergeRSVPs([newRecord], mergeRSVPs(cloudItems, currentLocal));
 
-    return NextResponse.json({ success: true, record: newRecord });
+    saveLocalRSVPs(updated);
+    await syncCloudRSVPs(updated);
+
+    return NextResponse.json({ success: true, record: newRecord, rsvps: updated });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || "Error al guardar confirmación" }, { status: 500 });
   }
 }
 
 export async function DELETE() {
-  try {
-    await fetch(CLOUD_DB_URL, { method: "DELETE" });
-  } catch (e) {}
   saveLocalRSVPs([]);
-  return NextResponse.json({ success: true });
+  await syncCloudRSVPs([]);
+  return NextResponse.json({ success: true, count: 0, rsvps: [] });
 }
+

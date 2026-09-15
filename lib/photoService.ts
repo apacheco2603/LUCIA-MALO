@@ -109,21 +109,53 @@ export async function savePhotoCloud(photoData: Omit<PhotoItem, "id">): Promise<
   }
 }
 
+function mergePhotoArrays(listA: PhotoItem[], listB: PhotoItem[]): PhotoItem[] {
+  const mergedMap = new Map<string, PhotoItem>();
+  [...listA, ...listB].forEach((item) => {
+    if (!item || !item.url) return;
+    const key = item.id || item.url.slice(-40);
+    if (!mergedMap.has(key)) {
+      mergedMap.set(key, item);
+    }
+  });
+  return Array.from(mergedMap.values());
+}
+
 export function subscribePhotosCloud(callback: (records: PhotoItem[]) => void) {
   let isSubscribed = true;
+
+  // 1. Instantly return local items on subscription start
+  const initialLocal = getLocalPhotos();
+  if (initialLocal.length > 0) {
+    callback(initialLocal);
+  }
 
   const fetchGlobalAPI = async () => {
     try {
       const res = await fetch("/api/photos", { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
-        if (data && Array.isArray(data.photos) && data.photos.length > 0) {
-          if (isSubscribed) callback(data.photos);
-          return true;
+        const serverPhotos: PhotoItem[] = Array.isArray(data.photos) ? data.photos : [];
+        const localPhotos = getLocalPhotos();
+        const merged = mergePhotoArrays(serverPhotos, localPhotos);
+
+        if (merged.length > 0) {
+          try {
+            localStorage.setItem("boda_lucia_photos", JSON.stringify(merged));
+          } catch (e) {}
         }
+
+        if (isSubscribed) {
+          callback(merged);
+        }
+        return true;
       }
     } catch (e) {
       console.warn("API photos fetch warning", e);
+    }
+
+    if (isSubscribed) {
+      callback(getLocalPhotos());
     }
     return false;
   };
@@ -149,7 +181,8 @@ export function subscribePhotosCloud(callback: (records: PhotoItem[]) => void) {
         });
 
         if (cloudDocs.length > 0 && isSubscribed) {
-          callback(cloudDocs);
+          const merged = mergePhotoArrays(cloudDocs, getLocalPhotos());
+          callback(merged);
         }
       },
       () => {}
@@ -162,6 +195,7 @@ export function subscribePhotosCloud(callback: (records: PhotoItem[]) => void) {
     unsubscribeFirestore();
   };
 }
+
 
 export function getLocalPhotos(): PhotoItem[] {
   if (typeof window === "undefined") return [];

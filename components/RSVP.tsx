@@ -139,24 +139,63 @@ export default function RSVP() {
           {/* RSVP Form Column */}
           <div className="lg:col-span-7">
             {submittedData ? (
-              <div className="glass-panel-dark rounded-3xl p-8 sm:p-12 border border-gold-500/40 text-center max-w-2xl mx-auto shadow-2xl animate-fadeIn">
-                <div className="w-16 h-16 rounded-full bg-gold-500/20 text-gold-400 flex items-center justify-center mx-auto mb-6 border border-gold-500/40">
-                  <CheckCircle2 className="w-10 h-10" />
+              <div className="glass-panel-dark rounded-3xl p-6 sm:p-10 border border-gold-500/40 text-center max-w-2xl mx-auto shadow-2xl animate-fadeIn space-y-6">
+                <div className="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/40 shadow-lg">
+                  <CheckCircle2 className="w-12 h-12" />
                 </div>
 
-                <h3 className="font-serif text-3xl font-bold text-gold-200 mb-2">
-                  {t("rsvp_confirmed_title")}
-                </h3>
-                <p className="text-sm text-white/90 mb-8">
-                  {t("rsvp_confirmed_thanks")} (<strong>{submittedData.name}</strong>)
+                <div className="space-y-2">
+                  <span className="text-xs uppercase tracking-widest text-gold-300 font-semibold">
+                    ¡Confirmación Recibida en la Nube!
+                  </span>
+                  <h3 className="font-serif text-3xl sm:text-4xl font-bold text-white">
+                    {t("rsvp_confirmed_title")}
+                  </h3>
+                </div>
+
+                <div className="bg-white/10 rounded-2xl p-5 border border-white/15 text-left max-w-md mx-auto space-y-3">
+                  <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                    <span className="text-xs text-gray-300">Invitado:</span>
+                    <strong className="text-sm font-semibold text-gold-200">{submittedData.name}</strong>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                    <span className="text-xs text-gray-300">Estado:</span>
+                    <strong className="text-xs font-bold text-emerald-400 uppercase">
+                      {submittedData.attending === "yes" ? "SÍ Asistiré" : "No podré asistir"}
+                    </strong>
+                  </div>
+                  {submittedData.attending === "yes" && (
+                    <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                      <span className="text-xs text-gray-300">Asistentes:</span>
+                      <strong className="text-sm text-white">{submittedData.guestsCount} persona(s)</strong>
+                    </div>
+                  )}
+                  {submittedData.email && (
+                    <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                      <span className="text-xs text-gray-300">Email:</span>
+                      <span className="text-xs text-gray-200">{submittedData.email}</span>
+                    </div>
+                  )}
+                </div>
+
+                <p className="text-sm text-gold-200/90 font-serif italic max-w-lg mx-auto">
+                  "{t("rsvp_confirmed_thanks")} Tu respuesta ha sido enviada con éxito a Lucía & Malo."
                 </p>
 
-                <button
-                  onClick={handleResetRSVP}
-                  className="text-xs text-gold-400 hover:text-gold-300 underline tracking-wider uppercase transition-colors"
-                >
-                  {t("rsvp_modify_btn")}
-                </button>
+                <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <a
+                    href="#detalles"
+                    className="px-6 py-3 rounded-full bg-gold-500 hover:bg-gold-600 text-white font-semibold text-xs uppercase tracking-wider transition-all shadow-md"
+                  >
+                    Ver Detalles & Ubicación
+                  </a>
+                  <button
+                    onClick={handleResetRSVP}
+                    className="text-xs text-gray-400 hover:text-white underline tracking-wider uppercase transition-colors"
+                  >
+                    {t("rsvp_modify_btn")}
+                  </button>
+                </div>
               </div>
             ) : (
               <form

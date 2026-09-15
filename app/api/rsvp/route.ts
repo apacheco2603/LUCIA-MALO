@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
+// Firebase Realtime Cloud Database REST API endpoint for cross-device sync
+const CLOUD_DB_URL = "https://boda-lucia-malo-default-rtdb.firebaseio.com/rsvps.json";
+
 const dataDir = path.join(process.cwd(), "data");
 const filePath = path.join(dataDir, "rsvps.json");
 
@@ -14,29 +17,53 @@ function ensureDataFile() {
   }
 }
 
-function getRSVPsFromFile(): any[] {
+function getLocalRSVPs(): any[] {
   try {
     ensureDataFile();
     const content = fs.readFileSync(filePath, "utf-8");
     return JSON.parse(content || "[]");
   } catch (e) {
-    console.error("Error reading RSVPs file", e);
     return [];
   }
 }
 
-function saveRSVPsToFile(data: any[]) {
+function saveLocalRSVPs(data: any[]) {
   try {
     ensureDataFile();
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
-  } catch (e) {
-    console.error("Error writing RSVPs file", e);
-  }
+  } catch (e) {}
 }
 
 export async function GET() {
-  const rsvps = getRSVPsFromFile();
-  return NextResponse.json({ success: true, count: rsvps.length, rsvps });
+  let cloudItems: any[] = [];
+  try {
+    const res = await fetch(CLOUD_DB_URL, { cache: "no-store" });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && typeof data === "object") {
+        cloudItems = Object.keys(data)
+          .map((key) => ({
+            ...data[key],
+            id: key,
+          }))
+          .reverse();
+      }
+    }
+  } catch (e) {
+    console.warn("Cloud DB fetch fallback", e);
+  }
+
+  const localItems = getLocalRSVPs();
+  const mergedMap = new Map();
+  [...cloudItems, ...localItems].forEach((item) => {
+    const key = item.id || (item.name ? item.name + "_" + (item.submittedAt || "") : Math.random().toString());
+    if (!mergedMap.has(key)) {
+      mergedMap.set(key, item);
+    }
+  });
+
+  const merged = Array.from(mergedMap.values());
+  return NextResponse.json({ success: true, count: merged.length, rsvps: merged });
 }
 
 export async function POST(req: Request) {
@@ -46,23 +73,37 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Nombre es requerido" }, { status: 400 });
     }
 
-    const currentRSVPs = getRSVPsFromFile();
     const newRecord = {
       ...body,
-      id: "rsvp_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
       submittedAt: body.submittedAt || new Date().toLocaleString("es-ES"),
     };
 
-    const updated = [newRecord, ...currentRSVPs];
-    saveRSVPsToFile(updated);
+    // 1. Post to Cloud DB for instant cross-device synchronization (PC & Mobile Phone)
+    try {
+      await fetch(CLOUD_DB_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newRecord),
+      });
+    } catch (e) {
+      console.warn("Cloud DB POST fallback", e);
+    }
 
-    return NextResponse.json({ success: true, record: newRecord, totalCount: updated.length });
+    // 2. Save locally
+    const currentLocal = getLocalRSVPs();
+    const updatedLocal = [newRecord, ...currentLocal];
+    saveLocalRSVPs(updatedLocal);
+
+    return NextResponse.json({ success: true, record: newRecord });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || "Error al guardar confirmación" }, { status: 500 });
   }
 }
 
 export async function DELETE() {
-  saveRSVPsToFile([]);
-  return NextResponse.json({ success: true, message: "Todas las confirmaciones fueron eliminadas" });
+  try {
+    await fetch(CLOUD_DB_URL, { method: "DELETE" });
+  } catch (e) {}
+  saveLocalRSVPs([]);
+  return NextResponse.json({ success: true });
 }

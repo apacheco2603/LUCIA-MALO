@@ -73,21 +73,10 @@ async function syncCloudRSVPs(list: any[]) {
   }
 }
 
-function isTestRecord(item: any): boolean {
-  if (!item || !item.name) return true;
-  const lowerName = String(item.name).trim().toLowerCase();
-  return (
-    lowerName.includes("test") ||
-    lowerName === "dummy" ||
-    lowerName === "prueba" ||
-    lowerName === "user"
-  );
-}
-
 function mergeRSVPs(listA: any[], listB: any[]): any[] {
   const mergedMap = new Map();
   [...listA, ...listB].forEach((item) => {
-    if (!item || !item.name || isTestRecord(item)) return;
+    if (!item || !item.name || !String(item.name).trim()) return;
     const nameKey = String(item.name).trim().toLowerCase();
     const emailKey = item.email ? String(item.email).trim().toLowerCase() : "";
     const key = `${nameKey}_${emailKey}`;
@@ -105,6 +94,7 @@ function mergeRSVPs(listA: any[], listB: any[]): any[] {
   });
   return Array.from(mergedMap.values());
 }
+
 
 
 

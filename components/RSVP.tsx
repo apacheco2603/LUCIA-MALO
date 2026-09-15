@@ -95,6 +95,21 @@ export default function RSVP() {
 
   const handleResetRSVP = () => {
     localStorage.removeItem("boda_lucia_rsvp");
+    setFormData({
+      name: "",
+      email: "",
+      attending: "yes",
+      guestsCount: 1,
+      dietaryNotes: "",
+      dedicatedSong: "",
+      message: "",
+    });
+    setDietaryOptions({
+      vegetariano: false,
+      vegano: false,
+      celiaco: false,
+      sinLactosa: false,
+    });
     setSubmittedData(null);
   };
 
@@ -183,21 +198,23 @@ export default function RSVP() {
                 </p>
 
                 <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <button
+                    onClick={handleResetRSVP}
+                    className="px-6 py-3 rounded-full bg-gold-500 hover:bg-gold-600 text-white font-semibold text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-2"
+                  >
+                    <Users className="w-4 h-4" />
+                    <span>Confirmar a otro invitado</span>
+                  </button>
                   <a
                     href="#detalles"
-                    className="px-6 py-3 rounded-full bg-gold-500 hover:bg-gold-600 text-white font-semibold text-xs uppercase tracking-wider transition-all shadow-md"
+                    className="text-xs text-gray-300 hover:text-white underline tracking-wider uppercase transition-colors"
                   >
                     Ver Detalles & Ubicación
                   </a>
-                  <button
-                    onClick={handleResetRSVP}
-                    className="text-xs text-gray-400 hover:text-white underline tracking-wider uppercase transition-colors"
-                  >
-                    {t("rsvp_modify_btn")}
-                  </button>
                 </div>
               </div>
             ) : (
+
               <form
                 onSubmit={handleSubmit}
                 className="glass-panel-dark rounded-3xl p-6 sm:p-10 border border-gold-500/30 space-y-8 shadow-2xl"

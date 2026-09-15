@@ -73,9 +73,11 @@ async function syncCloudRSVPs(list: any[]) {
   }
 }
 
-function mergeRSVPs(listA: any[], listB: any[]): any[] {
+function mergeRSVPs(newRecords: any[], existingRecords: any[]): any[] {
   const mergedMap = new Map();
-  [...listA, ...listB].forEach((item) => {
+
+  // Process existing (older) records first, then newRecords second so new records overwrite existing ones
+  [...existingRecords, ...newRecords].forEach((item) => {
     if (!item || !item.name || !String(item.name).trim()) return;
     const nameKey = String(item.name).trim().toLowerCase();
     const emailKey = item.email ? String(item.email).trim().toLowerCase() : "";
@@ -88,12 +90,13 @@ function mergeRSVPs(listA: any[], listB: any[]): any[] {
       mergedMap.set(key, {
         ...existing,
         ...item,
-        id: item.id || existing.id,
       });
     }
   });
+
   return Array.from(mergedMap.values());
 }
+
 
 
 

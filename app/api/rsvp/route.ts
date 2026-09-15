@@ -73,12 +73,21 @@ async function syncCloudRSVPs(list: any[]) {
   }
 }
 
+function isTestRecord(item: any): boolean {
+  if (!item || !item.name) return true;
+  const lowerName = String(item.name).trim().toLowerCase();
+  return (
+    lowerName.includes("test") ||
+    lowerName === "dummy" ||
+    lowerName === "prueba" ||
+    lowerName === "user"
+  );
+}
+
 function mergeRSVPs(listA: any[], listB: any[]): any[] {
   const mergedMap = new Map();
   [...listA, ...listB].forEach((item) => {
-    if (!item || !item.name) return;
-    // Exclude old dummy test artifact if present
-    if (item.name === "Test User" && !item.email && !item.submittedAt) return;
+    if (!item || !item.name || isTestRecord(item)) return;
     const key =
       item.id || `${item.name.trim().toLowerCase()}_${item.email ? item.email.trim().toLowerCase() : ""}_${item.submittedAt || ""}`;
     if (!mergedMap.has(key)) {
@@ -87,6 +96,7 @@ function mergeRSVPs(listA: any[], listB: any[]): any[] {
   });
   return Array.from(mergedMap.values());
 }
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

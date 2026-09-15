@@ -65,10 +65,21 @@ export async function saveRSVP(rsvpData: Omit<RSVPRecord, "id">): Promise<void> 
   }
 }
 
+function isTestRecord(item: any): boolean {
+  if (!item || !item.name) return true;
+  const lowerName = String(item.name).trim().toLowerCase();
+  return (
+    lowerName.includes("test") ||
+    lowerName === "dummy" ||
+    lowerName === "prueba" ||
+    lowerName === "user"
+  );
+}
+
 function mergeRSVPArrays(listA: RSVPRecord[], listB: RSVPRecord[]): RSVPRecord[] {
   const mergedMap = new Map<string, RSVPRecord>();
   [...listA, ...listB].forEach((item) => {
-    if (!item || !item.name) return;
+    if (!item || !item.name || isTestRecord(item)) return;
     const key =
       item.id || `${item.name.trim().toLowerCase()}_${item.email ? item.email.trim().toLowerCase() : ""}_${item.submittedAt || ""}`;
     if (!mergedMap.has(key)) {
@@ -83,9 +94,7 @@ export function subscribeRSVPs(callback: (records: RSVPRecord[]) => void) {
 
   // 1. Instantly return local items on subscription start (no blank state on reload!)
   const initialLocal = getLocalRSVPs();
-  if (initialLocal.length > 0) {
-    callback(initialLocal);
-  }
+  callback(initialLocal);
 
   const fetchGlobalAPI = async () => {
     try {
@@ -109,11 +118,9 @@ export function subscribeRSVPs(callback: (records: RSVPRecord[]) => void) {
           }
         }
 
-        if (merged.length > 0) {
-          try {
-            localStorage.setItem("boda_lucia_rsvp_list", JSON.stringify(merged));
-          } catch (e) {}
-        }
+        try {
+          localStorage.setItem("boda_lucia_rsvp_list", JSON.stringify(merged));
+        } catch (e) {}
 
         if (isSubscribed) {
           callback(merged);
@@ -123,7 +130,6 @@ export function subscribeRSVPs(callback: (records: RSVPRecord[]) => void) {
     } catch (e) {
       console.warn("API fetch warning", e);
     }
-
 
     // Fallback: if network API call fails, provide local storage
     if (isSubscribed) {
@@ -149,13 +155,15 @@ export function subscribeRSVPs(callback: (records: RSVPRecord[]) => void) {
         const cloudDocs: RSVPRecord[] = [];
         snapshot.forEach((docSnap) => {
           const data = docSnap.data() as RSVPRecord;
-          cloudDocs.push({
-            ...data,
-            id: docSnap.id,
-          });
+          if (!isTestRecord(data)) {
+            cloudDocs.push({
+              ...data,
+              id: docSnap.id,
+            });
+          }
         });
 
-        if (cloudDocs.length > 0 && isSubscribed) {
+        if (isSubscribed) {
           const merged = mergeRSVPArrays(cloudDocs, getLocalRSVPs());
           callback(merged);
         }
@@ -180,7 +188,7 @@ export function getLocalRSVPs(): RSVPRecord[] {
   if (savedListRaw) {
     try {
       const parsed = JSON.parse(savedListRaw);
-      if (Array.isArray(parsed)) list = parsed;
+      if (Array.isArray(parsed)) list = parsed.filter((i) => !isTestRecord(i));
     } catch (e) {
       console.error(e);
     }
@@ -189,14 +197,17 @@ export function getLocalRSVPs(): RSVPRecord[] {
   if (savedSingleRaw) {
     try {
       const parsed = JSON.parse(savedSingleRaw);
-      if (parsed && parsed.name) {
+      if (parsed && parsed.name && !isTestRecord(parsed)) {
         list = mergeRSVPArrays([parsed], list);
+      } else if (isTestRecord(parsed)) {
+        localStorage.removeItem("boda_lucia_rsvp");
       }
     } catch (e) {
       console.error(e);
     }
   }
 
-  return list;
+  return list.filter((i) => !isTestRecord(i));
 }
+
 

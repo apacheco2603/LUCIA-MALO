@@ -85,6 +85,16 @@ function mergePhotos(listA: any[], listB: any[]): any[] {
   return Array.from(mergedMap.values());
 }
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200, headers: corsHeaders });
+}
+
 export async function GET() {
   const localItems = getLocalPhotos();
   const cloudItems = await fetchCloudPhotos();
@@ -98,14 +108,17 @@ export async function GET() {
     syncCloudPhotos(merged);
   }
 
-  return NextResponse.json({ success: true, count: merged.length, photos: merged });
+  return NextResponse.json(
+    { success: true, count: merged.length, photos: merged },
+    { headers: corsHeaders }
+  );
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     if (!body || !body.url) {
-      return NextResponse.json({ error: "Imagen requerida" }, { status: 400 });
+      return NextResponse.json({ error: "Imagen requerida" }, { status: 400, headers: corsHeaders });
     }
 
     const newRecord = {
@@ -121,15 +134,22 @@ export async function POST(req: Request) {
     saveLocalPhotos(updated);
     await syncCloudPhotos(updated);
 
-    return NextResponse.json({ success: true, record: newRecord, photos: updated });
+    return NextResponse.json(
+      { success: true, record: newRecord, photos: updated },
+      { headers: corsHeaders }
+    );
   } catch (e: any) {
-    return NextResponse.json({ error: e?.message || "Error al guardar foto" }, { status: 500 });
+    return NextResponse.json(
+      { error: e?.message || "Error al guardar foto" },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
 
 export async function DELETE() {
   saveLocalPhotos([]);
   await syncCloudPhotos([]);
-  return NextResponse.json({ success: true, count: 0, photos: [] });
+  return NextResponse.json({ success: true, count: 0, photos: [] }, { headers: corsHeaders });
 }
+
 

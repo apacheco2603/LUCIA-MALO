@@ -88,6 +88,16 @@ function mergeRSVPs(listA: any[], listB: any[]): any[] {
   return Array.from(mergedMap.values());
 }
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200, headers: corsHeaders });
+}
+
 export async function GET() {
   const localItems = getLocalRSVPs();
   const cloudItems = await fetchCloudRSVPs();
@@ -102,14 +112,17 @@ export async function GET() {
     syncCloudRSVPs(merged);
   }
 
-  return NextResponse.json({ success: true, count: merged.length, rsvps: merged });
+  return NextResponse.json(
+    { success: true, count: merged.length, rsvps: merged },
+    { headers: corsHeaders }
+  );
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     if (!body) {
-      return NextResponse.json({ error: "Cuerpo de solicitud requerido" }, { status: 400 });
+      return NextResponse.json({ error: "Cuerpo de solicitud requerido" }, { status: 400, headers: corsHeaders });
     }
 
     let newRecords: any[] = [];
@@ -128,7 +141,7 @@ export async function POST(req: Request) {
         },
       ];
     } else {
-      return NextResponse.json({ error: "Nombre es requerido" }, { status: 400 });
+      return NextResponse.json({ error: "Nombre es requerido" }, { status: 400, headers: corsHeaders });
     }
 
     const currentLocal = getLocalRSVPs();
@@ -138,16 +151,23 @@ export async function POST(req: Request) {
     saveLocalRSVPs(updated);
     await syncCloudRSVPs(updated);
 
-    return NextResponse.json({ success: true, count: updated.length, rsvps: updated });
+    return NextResponse.json(
+      { success: true, count: updated.length, rsvps: updated },
+      { headers: corsHeaders }
+    );
   } catch (e: any) {
-    return NextResponse.json({ error: e?.message || "Error al guardar confirmación" }, { status: 500 });
+    return NextResponse.json(
+      { error: e?.message || "Error al guardar confirmación" },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
 
 export async function DELETE() {
   saveLocalRSVPs([]);
   await syncCloudRSVPs([]);
-  return NextResponse.json({ success: true, count: 0, rsvps: [] });
+  return NextResponse.json({ success: true, count: 0, rsvps: [] }, { headers: corsHeaders });
 }
+
 
 

@@ -62,52 +62,10 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
   const [localTexts, setLocalTexts] = useState<Record<string, string>>({});
   const [saveNotice, setSaveNotice] = useState(false);
 
-  // Sample records to prepopulate if empty for instant Excel testing
-  const sampleRSVPs: RSVPRecord[] = [
-    {
-      name: "María García",
-      email: "maria.garcia@example.com",
-      attending: "yes",
-      guestsCount: 2,
-      dietary: ["vegetariano"],
-      dietaryNotes: "Sin frutos secos",
-      dedicatedSong: "Danza Kuduro - Don Omar",
-      message: "¡Muchas felicidades Lucía y Malo! Nos vemos muy pronto en Alfortville. ❤️",
-      submittedAt: "05/09/2026, 14:30",
-    },
-    {
-      name: "Pierre Dubois",
-      email: "pierre.dubois@example.com",
-      attending: "yes",
-      guestsCount: 1,
-      dietary: [],
-      dietaryNotes: "",
-      dedicatedSong: "Love On Top - Beyoncé",
-      message: "Félicitations pour ce grand jour ! Très heureux de célébrer avec vous.",
-      submittedAt: "06/09/2026, 11:15",
-    },
-    {
-      name: "Carlos & Ana Fernández",
-      email: "carlos.fernandez@example.com",
-      attending: "yes",
-      guestsCount: 4,
-      dietary: ["celiaco"],
-      dietaryNotes: "1 menú sin gluten para Ana",
-      dedicatedSong: "Vivienne - Sundara Karma",
-      message: "¡Listos para la gran fiesta!",
-      submittedAt: "07/09/2026, 18:45",
-    },
-  ];
-
   useEffect(() => {
     if (isOpen) {
       const unsubscribe = subscribeRSVPs((records) => {
-        if (records.length === 0) {
-          setRsvpList(sampleRSVPs);
-          localStorage.setItem("boda_lucia_rsvp_list", JSON.stringify(sampleRSVPs));
-        } else {
-          setRsvpList(records);
-        }
+        setRsvpList(records);
       });
 
       return () => {
@@ -189,17 +147,15 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
     document.body.removeChild(link);
   };
 
-  const handleClearRSVPs = () => {
+  const handleClearRSVPs = async () => {
     if (confirm("¿Estás seguro de vaciar la lista de confirmaciones?")) {
+      try {
+        await fetch("/api/rsvp", { method: "DELETE" });
+      } catch (e) {}
       localStorage.removeItem("boda_lucia_rsvp_list");
       localStorage.removeItem("boda_lucia_rsvp");
       setRsvpList([]);
     }
-  };
-
-  const handleLoadSampleRSVPs = () => {
-    localStorage.setItem("boda_lucia_rsvp_list", JSON.stringify(sampleRSVPs));
-    setRsvpList(sampleRSVPs);
   };
 
   const handleClearPhotos = async () => {
@@ -487,15 +443,7 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
                     <h5 className="text-xs uppercase tracking-wider text-gold-300 font-semibold">
                       Lista de Confirmaciones ({rsvpList.length})
                     </h5>
-                    {rsvpList.length === 0 ? (
-                      <button
-                        onClick={handleLoadSampleRSVPs}
-                        className="text-xs text-gold-400 hover:text-gold-300 flex items-center gap-1 underline"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Cargar Datos de Prueba</span>
-                      </button>
-                    ) : (
+                    {rsvpList.length > 0 && (
                       <button
                         onClick={handleClearRSVPs}
                         className="text-[11px] text-rose-400 hover:text-rose-300 underline"
@@ -508,16 +456,9 @@ export default function AdminModal({ isOpen, onClose }: AdminModalProps) {
                   <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
                     {rsvpList.length === 0 ? (
                       <div className="text-center py-8 bg-white/5 rounded-2xl border border-white/10 p-4">
-                        <p className="text-xs text-white/70 mb-3">
-                          Aún no se registran confirmaciones en este dispositivo.
+                        <p className="text-xs text-white/70">
+                          Aún no hay confirmaciones registradas. Las confirmaciones enviadas por los invitados aparecerán aquí automáticamente en tiempo real.
                         </p>
-                        <button
-                          onClick={handleLoadSampleRSVPs}
-                          className="px-4 py-2 rounded-xl bg-gold-500 hover:bg-gold-600 text-white font-semibold text-xs inline-flex items-center gap-1.5"
-                        >
-                          <Plus className="w-4 h-4" />
-                          <span>Cargar Confirmaciones de Ejemplo para Probar Excel</span>
-                        </button>
                       </div>
                     ) : (
                       rsvpList.map((record, i) => (
